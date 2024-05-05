@@ -8,10 +8,9 @@ def index(request):
     return render(request, 'index.html')
 
 def lobby(request):
-
+    # TODO how to make POST
     #if request.method != 'POST': 
-     #   return HttpResponseBadRequest  
-    
+    #    return HttpResponseBadRequest  
     
     playerName = ''
     playerID = ''
@@ -33,8 +32,7 @@ def lobby(request):
             # check if DB update is necessary
             lobbyList = ast.literal_eval(lobby.lobbyList)
             playerInDB = playerID in lobbyList and lobbyList[playerID] == playerName
-            if playerInDB:
-                print('already')
+            if playerInDB:                
                 dbAltered = True
                 break
 

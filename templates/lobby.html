@@ -12,21 +12,28 @@
         integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
         crossorigin="anonymous"></script>
   </head>
-
-  <h1>Lobby</h1>
   <body>
+
+    <h1>Lobby</h1>
+
+      <div id="currentPlayerName" class="playerNames">
+        Dein Name: 
+      </div>
         
-      <div id="lobbyPlayerList">
+      <div id="lobbyPlayerList">          
           
-          {% for id, name in lobbyList.items %}
+        {% for id, name in lobbyList.items %}
           <div class="playerNames">
-            {{name}}
+            Player {{ forloop.counter }}: {{name}}
           </div>
-          {% endfor %}
+        {% endfor %}
 
       </div>
 
       <script> 
+
+        document.getElementById('currentPlayerName').innerHTML = 'Dein Name: ' + JSON.parse(getCookie('userData')).playerName;
+
         $(document).ready(function(){
         setInterval(function(){
               $("#lobbyPlayerList").load(window.location.href + " #lobbyPlayerList" );
