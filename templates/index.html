@@ -1,0 +1,72 @@
+{% load static%}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset ="UTF-8">
+        <title>Start</title>
+        <link rel="stylesheet" href="{% static 'styleIndex.css' %}">
+        <link rel="shortcut icon" type="image/png" href="{% static 'images/std-icon.png' %}">
+        <script
+            src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
+
+    </head>
+    <body>        
+
+        <div class="ui">
+             
+            <form id="start" action="/lobby" onsubmit="return validateForm();">  
+                {% csrf_token %}              
+                <input type="text" id="name" placeholder="Dein Name" pattern="[A-Za-z]+" oninput="setCustomValidity('')" method="POST"></input><br>                       
+            </form>          
+
+            <script>                                             
+                
+                const getSHA256Hash = async (input) => {
+                    const textAsBuffer = new TextEncoder().encode(input);
+                    const hashBuffer = await window.crypto.subtle.digest("SHA-256", textAsBuffer);
+                    const hashArray = Array.from(new Uint8Array(hashBuffer));
+                    const hash = hashArray
+                        .map((item) => item.toString(16).padStart(2, "0"))
+                        .join("");
+                    return hash;
+                };
+
+                function validateForm(){                    
+                    var name = document.getElementById('name');
+                    
+                    let empty = name.value == '';
+                    let notValid = !name.checkValidity();
+                    
+                    if(empty || notValid){
+                        alert("Please enter valid values for all boxes.");
+                        return false;
+                    }
+                    return true;
+                }
+
+                $('#start').on('submit', async function(event){     
+
+                    
+                    // TODO read cookie and if not available make one or overwrite
+                    
+                    var name = document.getElementById('name').value;
+                    const d = new Date();
+                    let time = d.getTime();
+                    var userID = await getSHA256Hash(name + time);
+                    var userData = `{"playerName":"${name}", "playerID":"${userID}"}`;
+                    document.cookie = `userData=${userData}` + ";" + "SameSite=Lax;";                                                                                
+                });
+            </script>      
+        </div> 
+
+        <footer>
+            <p> <a href="http://www.onlinewebfonts.com">Font By Online Web Fonts (Alisa Nowak) / </a> 
+                Image by <a href="https://pixabay.com/users/felixmittermeier-4397258/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=2463236">FelixMittermeier</a> from <a href="https://pixabay.com/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=2463236">Pixabay</a></p>
+        </footer>
+        
+    </body>
+</html>
+
