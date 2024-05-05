@@ -17,8 +17,8 @@
   <body>
         
       <div id="lobbyPlayerList">
-      
-          {% for name in lobbyList %}
+          
+          {% for id, name in lobbyList.items %}
           <div class="playerNames">
             {{name}}
           </div>
@@ -29,7 +29,7 @@
       <script> 
         $(document).ready(function(){
         setInterval(function(){
-              $("#lobbyList").load(window.location.href + " #lobbyList" );
+              $("#lobbyPlayerList").load(window.location.href + " #lobbyPlayerList" );
         }, 1000);
         }); 
 
@@ -48,12 +48,7 @@
           }
           return cookieValue;
       }
-
       console.log(getCookie('userData'))
-      </script>
-       
-      
-        
-        
+      </script>      
   </body>
 </html>

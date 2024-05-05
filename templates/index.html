@@ -47,17 +47,43 @@
                     return true;
                 }
 
-                $('#start').on('submit', async function(event){     
+                function getCookie(name) {
+                    var cookieValue = null;
+                    if (document.cookie && document.cookie != '') {
+                        var cookies = document.cookie.split(';');
+                        for (var i = 0; i < cookies.length; i++) {
+                            var cookie = jQuery.trim(cookies[i]);
+                            // Does this cookie string begin with the name we want?
+                            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
 
-                    
-                    // TODO read cookie and if not available make one or overwrite
+                $('#start').on('submit', async function(event){     
                     
                     var name = document.getElementById('name').value;
-                    const d = new Date();
-                    let time = d.getTime();
-                    var userID = await getSHA256Hash(name + time);
-                    var userData = `{"playerName":"${name}", "playerID":"${userID}"}`;
-                    document.cookie = `userData=${userData}` + ";" + "SameSite=Lax;";                                                                                
+
+                    userCookie = getCookie('userData');
+                    if(userCookie == null){
+                                            
+                        const d = new Date();
+                        let time = d.getTime();
+                        var userID = await getSHA256Hash(name + time);
+                        var userData = `{"playerName":"${name}", "playerID":"${userID}"}`;
+                        document.cookie = `userData=${userData}` + ";" + "SameSite=Lax;";   
+                        
+                    // update playerName
+                    }else if (JSON.parse(userCookie).playerName != name){
+
+                        var userID = JSON.parse(userCookie).playerID;
+                        var userData = `{"playerName":"${name}", "playerID":"${userID}"}`;
+                        document.cookie = `userData=${userData}` + ";" + "SameSite=Lax;";   
+
+                    }                                                                                     
                 });
             </script>      
         </div> 

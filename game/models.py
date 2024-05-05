@@ -3,6 +3,7 @@ from django.db import models
 # Create your models here.
 
 class Lobby(models.Model):    
-    lobbyID = models.IntegerField() 
+    lobbyID = models.IntegerField(primary_key=True) 
     lobbyCount = models.IntegerField() 
-    lobbyList = models.TextField(null=True)
+    lobbyList = models.TextField()
+    accessBlocked = models.IntegerField()
