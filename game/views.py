@@ -44,11 +44,8 @@ def lobby(request):
             lobby.accessBlocked = 1
             lobby.save()
                            
-            lobbyList[playerID] = playerName
-            print('####lobbyList')
-            print(lobbyList)
-            lobby.lobbyList = str(lobbyList)
-            print(lobby.lobbyList)
+            lobbyList[playerID] = playerName            
+            lobby.lobbyList = str(lobbyList)            
             lobby.accessBlocked = 0
             lobby.save()
             
@@ -57,6 +54,52 @@ def lobby(request):
 
         return render(request, 'lobby.html', {'lobbyList': lobbyList})
 
+def removePlayer(request):
+    
+    playerName = ''
+    playerID = ''
+
+    try:        
+        playerName = str(ast.literal_eval(request.COOKIES['userData']).get('playerName'))
+        playerID = str(ast.literal_eval(request.COOKIES['userData']).get('playerID'))
+        
+    except KeyError:
+        return HttpResponseBadRequest    
+
+    dbAltered = False
+    while not dbAltered:
+
+        lobbies = Lobby.objects.filter(lobbyID=0)
+
+        for lobby in lobbies:
+        
+            lobbyList = ast.literal_eval(lobby.lobbyList)
+                
+            # wait for exclusive access
+            if lobby.accessBlocked == 1:
+                break
+
+            # add player in DB
+            lobby.accessBlocked = 1
+            lobby.save()
+
+            lobbyList = ast.literal_eval(lobby.lobbyList)
+            if playerID in lobbyList:
+                del lobbyList[playerID]
+
+            lobby.lobbyList = str(lobbyList)
+            lobby.accessBlocked = 0
+            lobby.save()
+            
+            dbAltered = True
+            break
+
+        
+
+    return render(request, 'index.html')
+
+def game(request):
+    pass
      
     
 

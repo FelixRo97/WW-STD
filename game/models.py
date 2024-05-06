@@ -6,4 +6,5 @@ class Lobby(models.Model):
     lobbyID = models.IntegerField(primary_key=True) 
     lobbyCount = models.IntegerField() 
     lobbyList = models.TextField()
+    roleMatching = models.TextField()
     accessBlocked = models.IntegerField()

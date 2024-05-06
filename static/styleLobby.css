@@ -14,9 +14,12 @@ h1 {
 	font-family: verdana;
 	text-transform: uppercase;
 	letter-spacing: 0.1em;
-	text-shadow: 1px 1px 1px black, 1px -1px 1px black, -1px 1px 1px black, -1px -1px 1px black;
-	
-    
+	text-shadow: 1px 1px 1px black, 1px -1px 1px black, -1px 1px 1px black, -1px -1px 1px black;    
+}
+
+img {    
+	width: 120px;
+	height: 120px;	
 }
 
 .playerNames {
@@ -31,9 +34,23 @@ h1 {
     
 }
 
+.figures {
+	bottom: 0;
+}
+
 #currentPlayerName {
 
     font-size: 2.5em; 
     margin-bottom: 1em;
 
+}
+
+#figureStart {
+	float: right;
+	bottom: 0;
+}
+
+#figureBack {
+	float: left;
+	bottom: 0;
 }

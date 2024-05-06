@@ -16,19 +16,30 @@
 
     <h1>Lobby</h1>
 
-      <div id="currentPlayerName" class="playerNames">
-        Dein Name: 
-      </div>
+    <div id="currentPlayerName" class="playerNames">
+      Dein Name: 
+    </div>
+      
+    <div id="lobbyPlayerList">          
         
-      <div id="lobbyPlayerList">          
-          
-        {% for id, name in lobbyList.items %}
-          <div class="playerNames">
-            Player {{ forloop.counter }}: {{name}}
-          </div>
-        {% endfor %}
+      {% for id, name in lobbyList.items %}
+        <div class="playerNames">
+          Player {{ forloop.counter }}: {{name}}
+        </div>
+      {% endfor %}
 
-      </div>
+    </div>
+
+    <div class="figures">        
+      <a  href="/game">
+        <img src="{% static 'images/play.webp' %}" id="figureStart" title="start" alt="start">
+      </a>             
+    
+      <a href="/removePlayer">
+        <img src="{% static 'images/back.webp' %}" id="figureBack" title="back" alt="back">
+      </a>           
+    </div>
+    
 
       <script> 
 
