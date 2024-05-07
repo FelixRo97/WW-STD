@@ -14,7 +14,14 @@
   </head>
   <body>
 
-    <h1>Lobby</h1>
+    <div class="lobbyTop">
+      <h1>Lobby</h1>
+
+      <select name="modes" id="modeSelect">
+        <option value="werWolf">Werwolf</option>
+        <option value="secretHitler">Secret Hitler</option>        
+      </select> 
+    </div>
 
     <div id="currentPlayerName" class="playerNames">
       Dein Name: 
@@ -27,13 +34,12 @@
           Player {{ forloop.counter }}: {{name}}
         </div>        
       {% endfor %}
-
     </div>
 
     <div class="figures">        
       <div id="onlyPlayerOne">
-        <a  href="/game">
-          <img src="{% static 'images/play.webp' %}" id="figureStart" title="start" alt="start">
+        <a  >
+          <img src="{% static 'images/play.webp' %}" id="figureStart" title="start" alt="start" onclick="myFunction()">
         </a>     
       </div>
       
@@ -48,8 +54,21 @@
       $(document).ready(function(){
       setInterval(function(){
             $("#lobbyPlayerList").load(window.location.href + " #lobbyPlayerList" );
+            $("#figureStart").load(window.location.href + " #figureStart" );
       }, 1000);
-      }); 
+      });  
+      // TODO add img start to reload 
+      // href="/game"
+
+      function myFunction() {
+        var txt;
+        if (confirm("Press a button!")) {
+          txt = "You pressed OK!";
+        } else {
+          txt = "You pressed Cancel!";
+        }
+        document.getElementById("demo").innerHTML = txt;
+      }
 
       function getCookie(name) {
           var cookieValue = null;
@@ -73,6 +92,7 @@
     <script>            
       if ("{{ forloop.counter}}" == 1 && JSON.parse(getCookie('userData')).playerID != "{{id}}"){
         document.getElementById('onlyPlayerOne').style.display = 'none';
+        document.getElementById('modeSelect').style.display = 'none';        
       }          
     </script>
     {% endfor %}

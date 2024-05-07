@@ -9,18 +9,32 @@ body {
 
 h1 {
     
-	color: white;
-	text-align: center;
+	color: white;	
 	font-size: 3em; 
 	font-family: verdana;
 	text-transform: uppercase;
 	letter-spacing: 0.1em;
 	text-shadow: 1px 1px 1px black, 1px -1px 1px black, -1px 1px 1px black, -1px -1px 1px black;    
+	margin-bottom: 1%;
 }
 
 img {    
 	width: 8%;
 	height: 16%;
+}
+
+select {
+	align-items: center;  
+    font-size: x-large;        
+	font-family: verdana;
+	width: 180px;
+	margin-bottom: 3%;
+	
+	
+}
+
+.lobbyTop{
+	text-align: center;
 }
 
 .playerNames {
@@ -35,14 +49,10 @@ img {
     
 }
 
-/*.figures {
-	
-}*/
-
 #currentPlayerName {
 
     font-size: 2.5em; 
-    margin-bottom: 1em;
+    margin-bottom: 0.5em;
 
 }
 
