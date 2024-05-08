@@ -10,7 +10,8 @@
     <script
         src="https://code.jquery.com/jquery-3.2.1.min.js"
         integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-        crossorigin="anonymous"></script>
+        crossorigin="anonymous">
+    </script>
   </head>
   <body>
 
@@ -25,15 +26,6 @@
 
     <div id="currentPlayerName" class="playerNames">
       Dein Name: 
-    </div>
-      
-    <div id="lobbyPlayerList">          
-        
-      {% for id, name in lobbyList.items %}
-        <div class="playerNames">
-          Player {{ forloop.counter }}: {{name}}
-        </div>        
-      {% endfor %}
     </div>
 
     <div class="figures">        
@@ -54,20 +46,23 @@
       $(document).ready(function(){
       setInterval(function(){
             $("#lobbyPlayerList").load(window.location.href + " #lobbyPlayerList" );
-            $("#figureStart").load(window.location.href + " #figureStart" );
+            //$("#manageButton").load(window.location.href + " #manageButton" );
+            
+            updateView();
+            
       }, 1000);
       });  
       // TODO add img start to reload 
       // href="/game"
 
       function myFunction() {
-        var txt;
-        if (confirm("Press a button!")) {
-          txt = "You pressed OK!";
+        var selectSection = document.getElementById('modeSelect');
+        var currentMode = selectSection.options[selectSection.selectedIndex].text;
+        if (currentMode == 'Secret Hitler') {
+          location.replace('/game');
         } else {
-          txt = "You pressed Cancel!";
+          location.replace('/werwolfList');
         }
-        document.getElementById("demo").innerHTML = txt;
       }
 
       function getCookie(name) {
@@ -86,16 +81,42 @@
           return cookieValue;
       }
       console.log(getCookie('userData'))
-    </script>      
+    
+    </script>     
 
-    {% for id, name in lobbyList.items %}  
-    <script>            
-      if ("{{ forloop.counter}}" == 1 && JSON.parse(getCookie('userData')).playerID != "{{id}}"){
-        document.getElementById('onlyPlayerOne').style.display = 'none';
-        document.getElementById('modeSelect').style.display = 'none';        
-      }          
-    </script>
-    {% endfor %}
+    <div id="lobbyPlayerList">          
+        
+      {% for id, name in lobbyList.items %}
+        <div id="Player {{ forloop.counter }}" class="playerNames">
+          Player {{ forloop.counter }}: {{name}}
+        </div>                          
+      {% endfor %}
+    </div>
+
+    <div id="manageButton">            
+      <script>
+        function updateView(){
+          var playerOne = document.getElementById('Player 1').innerHTML.split(':')[1].trim();          
+          var playerNameCookie = JSON.parse(getCookie('userData')).playerName;
+          
+          //if ("{{ forloop.counter}}" == 1 && JSON.parse(getCookie('userData')).playerID == "{{id}}"){
+          
+          if(playerNameCookie.localeCompare(playerOne) == 0){
+          document.getElementById('onlyPlayerOne').style.visibility = 'visible';
+          document.getElementById('modeSelect').style.visibility = 'visible';
+          console.log('Visible');
+        
+          }else{
+            document.getElementById('onlyPlayerOne').style.visibility = 'hidden';
+            document.getElementById('modeSelect').style.visibility = 'hidden';
+            console.log('Hidden');
+          }
+        } 
+
+        updateView();
+                
+      </script>
+    <div>
 
   </body>
 </html>

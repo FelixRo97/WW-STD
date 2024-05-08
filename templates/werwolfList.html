@@ -1,0 +1,55 @@
+{% load static%}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset ="UTF-8">
+        <title>Start</title>
+        <link rel="stylesheet" href="{% static 'styleLobby.css' %}">
+        <link rel="shortcut icon" type="image/png" href="{% static 'images/std-icon.png' %}">
+        <script
+            src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous">
+        </script>
+    </head>
+    <body>     
+        
+        <div class="center">            
+            <div class="center">            
+                <ul id="roleList"></ul> 
+                <input id="roleInput" type="text">
+                <button id='buttonAdd' type="button" onclick='addRole();'>Add Role</button> 
+            </div>
+        </div>
+
+        <script>
+            $(document).ready(function(){
+                $('#roleInput').keypress(function(e){
+                if(e.keyCode==13)
+                $('#buttonAdd').click();
+                });
+            });
+
+            function addRole(){
+                var roleList = document.getElementById("roleList");
+                var newRole = document.getElementById("roleInput").value;
+            
+                var newRoleListItem = document.createElement("li");
+
+                        //create new text node
+                var roleListValue = document.createTextNode(newRole);
+
+                        //add text node to li element
+                newRoleListItem.appendChild(roleListValue);
+
+                        //add new list element built in previous steps to unordered list
+                        //called roleList
+                roleList.appendChild(newRoleListItem);
+            }
+            
+        </script>
+        
+    </body>
+</html>
+

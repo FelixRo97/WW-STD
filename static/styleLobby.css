@@ -21,6 +21,7 @@ h1 {
 img {    
 	width: 8%;
 	height: 16%;
+	cursor: pointer;
 }
 
 select {
@@ -29,6 +30,25 @@ select {
 	font-family: verdana;
 	width: 180px;
 	margin-bottom: 3%;
+	
+	
+}
+
+input{
+	font-size: x-large; 
+	margin-bottom: 50%;
+}
+
+button{
+	width: 100%;
+	height: 100%;
+	font-size: x-large; 
+}
+
+.center {
+	display: flex;
+	justify-content: center;
+	align-items: center;
 	
 	
 }

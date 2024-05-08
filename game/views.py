@@ -8,10 +8,15 @@ def index(request):
     return render(request, 'index.html')
 
 def lobby(request):
+
     # TODO how to make POST
     #if request.method != 'POST': 
     #    return HttpResponseBadRequest  
     
+
+    # TODO make player names unique
+    # TODO if lobby status is ingame and player is in lobby list -> forward to game session
+
     playerName = ''
     playerID = ''
 
@@ -54,9 +59,13 @@ def lobby(request):
 
         return render(request, 'lobby.html', {'lobbyList': lobbyList})
 
+def werwolfList(request):
+    # TODO also pass current playerCount
+    # TODO block lobby for new player
+    return render(request, 'werwolfList.html')
+
 def removePlayer(request):
-    
-    playerName = ''
+        
     playerID = ''
 
     try:        
@@ -93,13 +102,12 @@ def removePlayer(request):
             
             dbAltered = True
             break
-
         
-
     return render(request, 'index.html')
 
 def game(request):
-    pass
+    # TODO block lobby for new player
+    return render(request, 'game.html')
      
     
 
