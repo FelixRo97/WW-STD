@@ -13,14 +13,34 @@
             crossorigin="anonymous">
         </script>
     </head>
-    <body>     
+    <body>    
+        
+        <h1 class="lobbyTop">Roles to play</h1>
         
         <div class="center">            
-            <div class="center">            
-                <ul id="roleList"></ul> 
-                <input id="roleInput" type="text">
-                <button id='buttonAdd' type="button" onclick='addRole();'>Add Role</button> 
-            </div>
+            <!-- TODO edit option with checkboxes for what that role can see -->
+            <ol id="roleList" class="playerNames"></ol> 
+        </div>
+
+        <div class="center">
+            <input id="roleInput" type="text">
+        </div> 
+            
+        <div class="center">
+            <button id='buttonAdd' type="button" onclick='addRole();'>Add</button> 
+        </div>
+        
+        <div class="center">
+            <button id='buttonRemove' type="button" onclick='removeRole();'>Remove</button> 
+        </div>
+  
+        <div class="figures">        
+                               
+            <img src="{% static 'images/play.webp' %}" id="figureStart" title="start" alt="start" onclick="startGame()">                      
+            
+            <a href="/lobby">
+                <img src="{% static 'images/back.webp' %}" id="figureBack" title="back" alt="back">
+            </a>  
         </div>
 
         <script>
@@ -31,21 +51,72 @@
                 });
             });
 
+            document.getElementById('figureStart').style.visibility = 'hidden';
+
+            var currentRoleNumber = 0;
+            var maxRoleNumber = 2;
+
             function addRole(){
+
                 var roleList = document.getElementById("roleList");
                 var newRole = document.getElementById("roleInput").value;
+
+                if (newRole != ''){
+                    
+                    if (currentRoleNumber == maxRoleNumber)                        
+                        return;
             
-                var newRoleListItem = document.createElement("li");
+                    var newRoleListItem = document.createElement("li");      
+                    newRoleListItem.setAttribute("id", "role " + currentRoleNumber);
+                    
+                    var roleListValue = document.createTextNode(newRole);
 
-                        //create new text node
-                var roleListValue = document.createTextNode(newRole);
+                    newRoleListItem.appendChild(roleListValue);                
+                    roleList.appendChild(newRoleListItem);
 
-                        //add text node to li element
-                newRoleListItem.appendChild(roleListValue);
+                    currentRoleNumber++;
+                    document.getElementById("roleInput").value = '';
+                    
+                    if (currentRoleNumber == maxRoleNumber){
+                        document.getElementById('buttonAdd').setAttribute('disabled','disabled');
+                        document.getElementById('figureStart').style.visibility = 'visible';
+                    }
+                }
+            }
 
-                        //add new list element built in previous steps to unordered list
-                        //called roleList
-                roleList.appendChild(newRoleListItem);
+            function removeRole(){
+
+                if (currentRoleNumber==0)
+                    return;
+
+                var lastRole = document.getElementById('roleList').lastChild;
+                lastRole.parentNode.removeChild(lastRole);     
+                
+                currentRoleNumber--;
+                document.getElementById('buttonAdd').removeAttribute('disabled');
+                document.getElementById('figureStart').style.visibility = 'hidden';
+            }
+
+            function startGame(){
+
+                if(confirm('Start Game?')){
+                    //location.replace('/game');
+                    getRoles();
+                }
+            }
+
+            function getRoles(){
+
+                var currentRoleList = document.getElementById('roleList');
+                var currentRole = currentRoleList.firstChild;
+                while(currentRole != null){
+                    
+                    // TODO add to cookie resp. to http message
+
+                    currentRoleList.removeChild(currentRole); 
+                    var currentRole = currentRoleList.firstChild;
+                }
+                
             }
             
         </script>

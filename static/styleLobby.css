@@ -15,46 +15,56 @@ h1 {
 	text-transform: uppercase;
 	letter-spacing: 0.1em;
 	text-shadow: 1px 1px 1px black, 1px -1px 1px black, -1px 1px 1px black, -1px -1px 1px black;    
-	margin-bottom: 1%;
+	margin-bottom: 0.5em;
 }
 
 img {    
+	
 	width: 8%;
 	height: 16%;
 	cursor: pointer;
 }
 
 select {
+
 	align-items: center;  
     font-size: x-large;        
 	font-family: verdana;
 	width: 180px;
 	margin-bottom: 3%;
 	
-	
 }
 
 input{
-	font-size: x-large; 
-	margin-bottom: 50%;
+
+	font-size: x-large; 	
+	text-align: center;
+	font-family: verdana;
+	margin-bottom: 1em;
+
 }
 
 button{
-	width: 100%;
-	height: 100%;
+
+	width: 7em;
+	height: 2.3em;
 	font-size: x-large; 
+	font-family: verdana;
+	margin-bottom: 0.7em;
+
 }
 
 .center {
+
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	
-	
 }
 
 .lobbyTop{
+	
 	text-align: center;
+
 }
 
 .playerNames {

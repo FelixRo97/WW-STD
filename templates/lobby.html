@@ -28,16 +28,14 @@
       Dein Name: 
     </div>
 
-    <div class="figures">        
-      <div id="onlyPlayerOne">
-        <a  >
-          <img src="{% static 'images/play.webp' %}" id="figureStart" title="start" alt="start" onclick="myFunction()">
-        </a>     
-      </div>
+    <div class="figures">              
+          
+      <img src="{% static 'images/play.webp' %}" id="figureStart" title="start" alt="start" onclick="init()">        
       
       <a href="/removePlayer">
         <img src="{% static 'images/back.webp' %}" id="figureBack" title="back" alt="back">
       </a>           
+
     </div>
 
     <script> 
@@ -52,62 +50,63 @@
             
       }, 1000);
       });  
-      // TODO add img start to reload 
-      // href="/game"
-
-      function myFunction() {
+      
+      function init() {
+        
         var selectSection = document.getElementById('modeSelect');
         var currentMode = selectSection.options[selectSection.selectedIndex].text;
+        
         if (currentMode == 'Secret Hitler') {
-          location.replace('/game');
+          if (confirm('Start Game?')){
+            location.replace('/game');
+          }          
         } else {
           location.replace('/werwolfList');
         }
       }
 
       function getCookie(name) {
-          var cookieValue = null;
-          if (document.cookie && document.cookie != '') {
-              var cookies = document.cookie.split(';');
-              for (var i = 0; i < cookies.length; i++) {
-                  var cookie = jQuery.trim(cookies[i]);
-                  // Does this cookie string begin with the name we want?
-                  if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                      cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                      break;
-                  }
-              }
-          }
-          return cookieValue;
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
       }
       console.log(getCookie('userData'))
-    
     </script>     
 
-    <div id="lobbyPlayerList">          
-        
+    <div id="lobbyPlayerList">                  
       {% for id, name in lobbyList.items %}
+
         <div id="Player {{ forloop.counter }}" class="playerNames">
           Player {{ forloop.counter }}: {{name}}
         </div>                          
+      
       {% endfor %}
     </div>
 
     <div id="manageButton">            
       <script>
         function updateView(){
+
           var playerOne = document.getElementById('Player 1').innerHTML.split(':')[1].trim();          
-          var playerNameCookie = JSON.parse(getCookie('userData')).playerName;
+          var playerNameCookie = JSON.parse(getCookie('userData')).playerName;                    
           
-          //if ("{{ forloop.counter}}" == 1 && JSON.parse(getCookie('userData')).playerID == "{{id}}"){
-          
-          if(playerNameCookie.localeCompare(playerOne) == 0){
-          document.getElementById('onlyPlayerOne').style.visibility = 'visible';
-          document.getElementById('modeSelect').style.visibility = 'visible';
-          console.log('Visible');
+          if (playerNameCookie.localeCompare(playerOne) == 0){
+            document.getElementById('figureStart').style.visibility = 'visible';
+            document.getElementById('modeSelect').style.visibility = 'visible';
+            console.log('Visible');
         
-          }else{
-            document.getElementById('onlyPlayerOne').style.visibility = 'hidden';
+          } else {
+            document.getElementById('figureStart').style.visibility = 'hidden';
             document.getElementById('modeSelect').style.visibility = 'hidden';
             console.log('Hidden');
           }

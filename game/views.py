@@ -15,7 +15,7 @@ def lobby(request):
     
 
     # TODO make player names unique
-    # TODO if lobby status is ingame and player is in lobby list -> forward to game session
+    # TODO if lobby status is ingame and player is in lobby list -> forward to game session else show that session is closed
 
     playerName = ''
     playerID = ''
@@ -24,8 +24,9 @@ def lobby(request):
         playerName = str(ast.literal_eval(request.COOKIES['userData']).get('playerName'))
         playerID = str(ast.literal_eval(request.COOKIES['userData']).get('playerID'))
         
+    # if there were no cookies, player cannot be important for current lobby
     except KeyError:
-        return HttpResponseBadRequest
+        return render(request, 'index.html')
     
     dbAltered = False
     while not dbAltered:
@@ -68,12 +69,11 @@ def removePlayer(request):
         
     playerID = ''
 
-    try:        
-        playerName = str(ast.literal_eval(request.COOKIES['userData']).get('playerName'))
+    try:                
         playerID = str(ast.literal_eval(request.COOKIES['userData']).get('playerID'))
         
     except KeyError:
-        return HttpResponseBadRequest    
+        return render(request, 'index.html')
 
     dbAltered = False
     while not dbAltered:
@@ -106,7 +106,7 @@ def removePlayer(request):
     return render(request, 'index.html')
 
 def game(request):
-    # TODO block lobby for new player
+    # TODO block lobby & game session for new player from now on
     return render(request, 'game.html')
      
     
