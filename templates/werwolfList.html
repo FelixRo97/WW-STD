@@ -45,8 +45,8 @@
             </a>  
         </div>
 
-        <form id="forwardLobby" action="/gameWW" method="POST">
-            <!-- {% csrf_token %} add in form method="POST"  action="/forward/-->
+        <form id="forwardLobby"  method="POST">
+            <!-- {% csrf_token %} add in form method="POST"  action="/forward/ action="/gameWW"-->
             {% csrf_token %}
             <button id="startButton"></button>
         </form>
@@ -134,9 +134,9 @@
             console.log(document.cookie)
 
             $('#forwardLobby').on('submit', function(event){
-                //event.preventDefault();
+                event.preventDefault();
                 // in case form is send twice
-                //event.stopImmediatePropagation();
+                event.stopImmediatePropagation();
 
                 var roleArray = getRoles(); 
                 console.log(roleArray);                   
@@ -146,12 +146,10 @@
 
                 $.ajax({
                     type: 'POST',
-                    url:'/addConfig',                                            
+                    url:'/addRoles',                                            
                     data: {'roles': JSON.stringify(roleArray)},      
                     success: function(data) {                            
-                        //location.replace('/game');
-                        
-                        
+                        location.replace('/gameWW');
                     }
                     ,  
                     error: function(data){

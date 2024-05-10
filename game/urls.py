@@ -6,7 +6,7 @@ urlpatterns = [
     path('lobby', views.lobby, name='lobby'),
     path('removePlayer', views.removePlayer, name='removePlayer'),
     path('werwolfList', views.werwolfList, name='werwolfList'),
-    path('addConfig', views.addConfig, name="addConfig"),
+    path('addRoles', views.addRoles, name="addRoles"),
     path('gameWW', views.gameWW, name='gameWW'),
     path('gameSH', views.gameSH, name='gameSH'),
 ]
