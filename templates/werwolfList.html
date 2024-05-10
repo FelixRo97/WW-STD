@@ -15,7 +15,7 @@
     </head>
     <body>    
         
-        <h1 id="title" class="lobbyTop">Spielbare Rollen</h1>
+        <h1 id="title" class="lobbyTop">Spielbare Rollen ({{playerCount}})</h1>
         
         <div class="center">            
             <!-- TODO edit option with checkboxes for what that role can see -->
@@ -63,7 +63,7 @@
             document.getElementById('startButton').style.visibility = 'hidden';
             
             var currentRoleNumber = 0;
-            var maxRoleNumber = 2;
+            var maxRoleNumber = "{{playerCount}}";
 
             function addRole(){
 

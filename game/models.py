@@ -8,4 +8,4 @@ class Lobby(models.Model):
     lobbyList = models.TextField()
     roleMatching = models.TextField()
     accessBlocked = models.IntegerField()
-    # status = models.TextField() # Lobby, RoleSelection, InGame
+    status = models.TextField() # lobby or game

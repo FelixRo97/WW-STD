@@ -27,14 +27,15 @@ def lobby(request):
     except KeyError:
         return render(request, 'index.html')
     
-    lobbyList = alterDB(idLobby=0, addToLobby=[playerID, playerName]).lobbyList
-
+    lobbyList = ast.literal_eval(alterDB(idLobby=0, addToLobby=[playerID, playerName]).lobbyList)
     return render(request, 'lobby.html', {'lobbyList': lobbyList})
 
 def werwolfList(request):
-    # TODO also pass current playerCount
+    
     # TODO block lobby for new player
-    return render(request, 'werwolfList.html')
+
+    playerCount = blockLobby()
+    return render(request, 'werwolfList.html', {'playerCount': playerCount})
 
 def removePlayer(request):
         
@@ -51,6 +52,7 @@ def removePlayer(request):
         
     return render(request, 'index.html')
 
+# add specified Werwolf roles
 def addRoles(request):
     
     roles = ''
@@ -71,6 +73,7 @@ def addRoles(request):
     alterDB(matching=str(template))
     return JsonResponse({}, status=200)
 
+# Werwolf game session
 def gameWW(request):
     # TODO block lobby & game session for new player from now on
 
@@ -87,22 +90,29 @@ def gameWW(request):
     
     return render(request, 'game.html')
 
+# Sec Hit game session
 def gameSH(request):
     # TODO block lobby & game session for new player from now on
 
-    playerID = ''
-    playerName = ''
+    idLobby = 0
+    
 
-    try:                
-        playerID = str(ast.literal_eval(request.COOKIES['userData']).get('playerID'))
-        playerName = str(ast.literal_eval(request.COOKIES['userData']).get('playerName'))
+    #try:                
+    #    id = str(ast.literal_eval(request.COOKIES['userData']).get(???)))
+    
         
     # if there were no cookies, player cannot be important for current lobby
-    except KeyError:
-        return render(request, 'index.html')
+    #except KeyError:
+    #    return render(request, 'index.html')
+    
+    playerCount = blockLobby()
+
+    lobbies = Lobby.objects.filter(lobbyID=idLobby)
+
     
     return render(request, 'game.html')
         
+# alter DB with ONE of the possible parameters
 def alterDB(idLobby=0, countLobby=None, removeFromLobby=None, addToLobby=None, matching=None, stat=None):
 
     dbAltered = False
@@ -161,6 +171,9 @@ def alterDB(idLobby=0, countLobby=None, removeFromLobby=None, addToLobby=None, m
 
             elif (countLobby != None):
                 pass
+
+            else:
+                print("##### Info: Nothing changed although called intentionally!")
             
             lobby.accessBlocked = 0
             lobby.save()
@@ -170,4 +183,8 @@ def alterDB(idLobby=0, countLobby=None, removeFromLobby=None, addToLobby=None, m
     
     return ref
 
-     
+# set game mode to game -> no new players can enter and count player
+def blockLobby(lobbyID=0):
+
+    lobbyList = ast.literal_eval(alterDB(idLobby=lobbyID, stat="game").lobbyList)
+    return len(lobbyList)
