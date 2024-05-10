@@ -18,12 +18,13 @@
         <div class="ui">
              
             <form id="start" action="/lobby" onsubmit="return validateForm();">  
-                {% csrf_token %}              
-                <input type="text" id="name" placeholder="Dein Name" pattern="[A-Za-z]+" oninput="setCustomValidity('')" method="POST"></input><br>                       
+                <!-- {% csrf_token %} -->
+                <input type="text" id="name" placeholder="Dein Name" pattern="[A-Za-z]+" oninput="setCustomValidity('')"></input><br>                       
             </form>          
 
             <script>                                             
-                
+                console.log(document.cookie)
+
                 const getSHA256Hash = async (input) => {
                     const textAsBuffer = new TextEncoder().encode(input);
                     const hashBuffer = await window.crypto.subtle.digest("SHA-256", textAsBuffer);
@@ -41,49 +42,11 @@
                     let notValid = !name.checkValidity();
                     
                     if(empty || notValid){
-                        alert("Please enter valid values for all boxes.");
+                        alert("Bitte einen Namen eingeben.");
                         return false;
                     }
                     return true;
                 }
-
-                $(function() {                    
-                var csrftoken = getCookie('csrftoken');
-
-                /*
-                The functions below will create a header with csrftoken
-                */
-
-                function csrfSafeMethod(method) {
-                    // these HTTP methods do not require CSRF protection
-                    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-                }
-                function sameOrigin(url) {
-                    // test that a given url is a same-origin URL
-                    // url could be relative or scheme relative or absolute
-                    var host = document.location.host; // host + port
-                    var protocol = document.location.protocol;
-                    var sr_origin = '//' + host;
-                    var origin = protocol + sr_origin;
-                    // Allow absolute or scheme relative URLs to same origin
-                    return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
-                        (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
-                        // or any other URL that isn't scheme relative or absolute i.e relative.
-                        !(/^(\/\/|http:|https:).*/.test(url));
-                }
-
-                $.ajaxSetup({
-                    beforeSend: function(xhr, settings) {
-                        if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
-                            // Send the token to same-origin, relative URLs only.
-                            // Send the token only if the method warrants CSRF protection
-                            // Using the CSRFToken value acquired earlier
-                            xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                        }
-                    }
-                });
-
-                });
 
                 function getCookie(name) {
                     var cookieValue = null;
@@ -109,7 +72,7 @@
 
                     userCookie = getCookie('userData');
                     if(userCookie == null){
-                                            
+                        
                         const d = new Date();
                         let time = d.getTime();
                         var userID = await getSHA256Hash(name + time);
@@ -118,12 +81,12 @@
                         
                     // update playerName
                     }else if (JSON.parse(userCookie).playerName != name){
-
+                          
                         var userID = JSON.parse(userCookie).playerID;
                         var userData = `{"playerName":"${name}", "playerID":"${userID}"}`;
                         document.cookie = `userData=${userData}` + ";" + "SameSite=Lax;";   
 
-                    }                                                                                     
+                    }         
                 });
             </script>      
         </div> 

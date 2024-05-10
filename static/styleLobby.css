@@ -86,6 +86,7 @@ button{
 
 }
 
+
 #figureStart {
 	
 	position: absolute;
@@ -93,6 +94,20 @@ button{
 	bottom: 35px;
 	
 }
+/*
+#figureStart {
+	background-image: url(images/play.webp);
+	background-repeat: no-repeat;
+	background-position: 50% 50%;
+	
+	height: 50px;
+	width: 200px;
+	border: none;
+}
+  
+#figureStart span {
+	display: none;
+}*/
 
 #figureBack {
 	position: absolute;

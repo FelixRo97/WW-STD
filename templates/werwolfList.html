@@ -15,7 +15,7 @@
     </head>
     <body>    
         
-        <h1 id="title" class="lobbyTop">Roles to play</h1>
+        <h1 id="title" class="lobbyTop">Spielbare Rollen</h1>
         
         <div class="center">            
             <!-- TODO edit option with checkboxes for what that role can see -->
@@ -27,21 +27,29 @@
         </div> 
             
         <div class="center">
-            <button id='buttonAdd' type="button" onclick='addRole();'>Add</button> 
+            <button id='buttonAdd' type="button" onclick='addRole();'>Hinzufügen</button> 
         </div>
         
         <div class="center">
-            <button id='buttonRemove' type="button" onclick='removeRole();'>Remove</button> 
+            <button id='buttonRemove' type="button" onclick='removeRole();'>Entfernen</button> 
         </div>
   
         <div class="figures">                    
             
-            <img src="{% static 'images/play.webp' %}" id="figureStart" title="start" alt="start" onclick="startGame()">                      
+            <img src="{% static 'images/play.webp' %}" id="figureStart" title="start" alt="start" onclick="startGame();"> 
+            <!-- <button type="submit" onclick="sendRoles();" title="start" id="figureStart"><span>Cancel</span></button> -->
+            
                                     
             <a href="/lobby">
                 <img src="{% static 'images/back.webp' %}" id="figureBack" title="back" alt="back">
             </a>  
         </div>
+
+        <form id="forwardLobby" action="/gameWW" method="POST">
+            <!-- {% csrf_token %} add in form method="POST"  action="/forward/-->
+            {% csrf_token %}
+            <button id="startButton"></button>
+        </form>
 
         <script>
             $(document).ready(function(){
@@ -52,7 +60,8 @@
             });
 
             document.getElementById('figureStart').style.visibility = 'hidden';
-
+            document.getElementById('startButton').style.visibility = 'hidden';
+            
             var currentRoleNumber = 0;
             var maxRoleNumber = 2;
 
@@ -97,14 +106,6 @@
                 document.getElementById('figureStart').style.visibility = 'hidden';
             }
 
-            function startGame(){
-
-                if(confirm('Start Game?')){                    
-                    //document.getElementById('triggerStart').submit();
-                    sendRoles();
-                }
-            }
-
             function getRoles(){
 
                 var currentRoleList = document.getElementById('roleList');
@@ -113,15 +114,53 @@
                 while(currentRole != null){
                     
                     
-                    roles.push(currentRole);
+                    roles.push(currentRole.innerHTML);
                     currentRoleList.removeChild(currentRole); 
 
                     currentRole = currentRoleList.firstChild;
                 }
+                                
+                currentRoleNumber = 0;
+                document.getElementById('buttonAdd').removeAttribute('disabled');
                 return roles;
             }
 
+            function startGame(){      
+                if (confirm('Spiel starten?')){
+                    document.getElementById('startButton').click();                
+                }            
+            }
+
             console.log(document.cookie)
+
+            $('#forwardLobby').on('submit', function(event){
+                //event.preventDefault();
+                // in case form is send twice
+                //event.stopImmediatePropagation();
+
+                var roleArray = getRoles(); 
+                console.log(roleArray);                   
+                
+                var fd = new FormData();
+                fd.append("roles", "1");                                        
+
+                $.ajax({
+                    type: 'POST',
+                    url:'/addConfig',                                            
+                    data: {'roles': JSON.stringify(roleArray)},      
+                    success: function(data) {                            
+                        //location.replace('/game');
+                        
+                        
+                    }
+                    ,  
+                    error: function(data){
+                        console.log("Error");
+                        console.log(data);
+                        document.getElementById('title').innerHTML = "There was an error while processing. Please reload and try again.";                                                            
+                    }                    
+                });
+            });
 
             $(function() {                    
                 var csrftoken = getCookie('csrftoken');
@@ -175,39 +214,7 @@
                     }
                 }
                 return cookieValue;
-            }
-            
-            function sendRoles(){   
-
-                // why do we send twice and why not the correct thing?
-                
-                var roleArray = getRoles();                    
-                var fd = new FormData();
-                
-                fd.append("roles", roleArray);                                        
-
-                $.ajax({
-                    type:'POST',
-                    url:'/game',
-                    processData: false,
-                    contentType: false,
-                    dataType: "json",                        
-                    data: fd,                        
-                    statusCode: {
-                        200: function(data) {
-                            location.replace('/game');
-                        }
-                    },  
-                    error: function(data){
-                        console.log("Error");
-                        console.log(data);
-                        document.getElementById('title').innerHTML = "There was an error while processing. Please reload and try again.";
-                                                            
-                    }
-                    
-                });
-            };
-            
+            }                                
         </script>        
     </body>
 </html>

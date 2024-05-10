@@ -43,9 +43,10 @@
 
       $(document).ready(function(){
       setInterval(function(){
-            $("#lobbyPlayerList").load(window.location.href + " #lobbyPlayerList" );
-            //$("#manageButton").load(window.location.href + " #manageButton" );
             
+            // TODO reload with POST
+            //$("#lobbyPlayerList").load(window.location.reload());
+            $("#lobbyPlayerList").load(window.location.href + " #lobbyPlayerList" );            
             updateView();
             
       }, 1000);
@@ -57,8 +58,8 @@
         var currentMode = selectSection.options[selectSection.selectedIndex].text;
         
         if (currentMode == 'Secret Hitler') {
-          if (confirm('Start Game?')){
-            location.replace('/game');
+          if (confirm('Spiel starten?')){
+            location.replace('/gameSH');
           }          
         } else {
           location.replace('/werwolfList');
@@ -80,7 +81,7 @@
         }
         return cookieValue;
       }
-      console.log(getCookie('userData'))
+      console.log(document.cookie)
     </script>     
 
     <div id="lobbyPlayerList">                  
@@ -93,8 +94,7 @@
       {% endfor %}
     </div>
 
-    <div id="manageButton">            
-      <script>
+    <script>
         function updateView(){
 
           var playerOne = document.getElementById('Player 1').innerHTML.split(':')[1].trim();          
@@ -112,8 +112,6 @@
 
         updateView();
                 
-      </script>
-    <div>
-
+    </script>
   </body>
 </html>

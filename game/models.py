@@ -4,7 +4,7 @@ from django.db import models
 
 class Lobby(models.Model):    
     lobbyID = models.IntegerField(primary_key=True) 
-    lobbyCount = models.IntegerField() 
+    lobbyCount = models.IntegerField() # useless?
     lobbyList = models.TextField()
     roleMatching = models.TextField()
     accessBlocked = models.IntegerField()
