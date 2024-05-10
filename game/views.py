@@ -72,6 +72,7 @@ def removePlayer(request):
     try:                
         playerID = str(ast.literal_eval(request.COOKIES['userData']).get('playerID'))
         
+    # if there were no cookies, player cannot be important for current lobby
     except KeyError:
         return render(request, 'index.html')
 
@@ -107,6 +108,23 @@ def removePlayer(request):
 
 def game(request):
     # TODO block lobby & game session for new player from now on
+
+    playerID = ''
+    roles = ''
+
+    print('##')
+    print(request.POST.get('roles'))
+
+    try:                
+        playerID = str(ast.literal_eval(request.COOKIES['userData']).get('playerID'))
+        roles = str(ast.literal_eval(request.COOKIES['roles']))
+        
+    # if there were no cookies, player cannot be important for current lobby
+    except KeyError:
+        return render(request, 'index.html')
+    
+    print(roles)
+
     return render(request, 'game.html')
      
     
