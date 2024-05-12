@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponseBadRequest, JsonResponse
 import ast
 from .models import Lobby
+import random
 
 def index(request):
     return render(request, 'index.html')
@@ -27,6 +28,7 @@ def lobby(request):
     except KeyError:
         return render(request, 'index.html')
     
+    # TODO error catching
     lobbyList = ast.literal_eval(alterDB(idLobby=0, addToLobby=[playerID, playerName]).lobbyList)
     return render(request, 'lobby.html', {'lobbyList': lobbyList})
 
@@ -92,10 +94,13 @@ def gameWW(request):
 
 # Sec Hit game session
 def gameSH(request):
-    # TODO block lobby & game session for new player from now on
-
-    idLobby = 0
     
+    playerCount = blockLobby()
+    if playerCount == 0:
+        print("Error 0")
+        return HttpResponseBadRequest # TODO replace with invalidGameState.html oder so
+    
+    lobbyID = 0
 
     #try:                
     #    id = str(ast.literal_eval(request.COOKIES['userData']).get(???)))
@@ -104,17 +109,51 @@ def gameSH(request):
     # if there were no cookies, player cannot be important for current lobby
     #except KeyError:
     #    return render(request, 'index.html')
-    
-    playerCount = blockLobby()
 
-    lobbies = Lobby.objects.filter(lobbyID=idLobby)
+    # TODO move below to role distribution and return current matching in distribution if game already started and / or its not the 
+    # player one who made the call
 
+    roles = {"Hitler": 1, "Faschist": 0, "Liberal": 0}
+
+    if (playerCount < 5):
+        print("Error 1")
+        return HttpResponseBadRequest # TODO replace with invalidGameState.html oder so
+
+    elif (playerCount < 7):
+
+        roles["Faschist"] = 1
+        roles["Liberal"] = playerCount-2
+        
+    elif (playerCount < 9):
+        
+        roles["Faschist"] = 2
+        roles["Liberal"] = playerCount-3
+
+    elif (playerCount < 11):
+
+        roles["Faschist"] = 3
+        roles["Liberal"] = playerCount-4
     
+    else:
+        print("Error 2")
+        return HttpResponseBadRequest # TODO replace with invalidGameState.html oder so
+    
+    distribution = roleDistributionSH(roles, lobbyID)
+    if not distribution:
+        print("Error 3")
+        return HttpResponseBadRequest # TODO replace with invalidGameState.html oder so
+    
+    if (alterDB(matching=distribution) == ''):
+        print("Error 4")
+        return HttpResponseBadRequest # TODO replace with invalidGameState.html oder so
+        
+    print(distribution)
+         
     return render(request, 'game.html')
         
 # alter DB with ONE of the possible parameters
 def alterDB(idLobby=0, countLobby=None, removeFromLobby=None, addToLobby=None, matching=None, stat=None):
-
+    # TODO check if lobby is closed, if yes return ''
     dbAltered = False
     ref = ''
 
@@ -187,4 +226,39 @@ def alterDB(idLobby=0, countLobby=None, removeFromLobby=None, addToLobby=None, m
 def blockLobby(lobbyID=0):
 
     lobbyList = ast.literal_eval(alterDB(idLobby=lobbyID, stat="game").lobbyList)
-    return len(lobbyList)
+    if lobbyList != '':
+        return len(lobbyList)
+    return 0 
+   
+def roleDistributionSH(roleTemplate:dict, idLobby:int = 0):
+
+    try: 
+        lobbies = Lobby.objects.filter(lobbyID=idLobby)
+        players = {}
+
+        for lobby in lobbies:
+            
+            players = ast.literal_eval(lobby.lobbyList)
+            break
+
+        distribution = {}
+
+        for role in roleTemplate:
+
+            while roleTemplate[role] != 0:
+
+                currentPlayer = random.choice(list(players.items()))
+                distribution[currentPlayer] = role
+
+                del players[currentPlayer[0]]
+                roleTemplate[role] -= 1
+
+    except Exception as e:
+        print(e)
+        return False
+
+    return distribution
+
+def roleDistributionWW():
+    pass
+
