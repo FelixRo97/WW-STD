@@ -101,58 +101,33 @@ def gameSH(request):
         return HttpResponseBadRequest # TODO replace with invalidGameState.html oder so
     
     lobbyID = 0
+    playerID = ''
+    playerName = ''
 
-    #try:                
-    #    id = str(ast.literal_eval(request.COOKIES['userData']).get(???)))
-    
+    try:                
+        playerID = str(ast.literal_eval(request.COOKIES['userData']).get('playerID'))
+        playerName = str(ast.literal_eval(request.COOKIES['userData']).get('playerName'))
         
     # if there were no cookies, player cannot be important for current lobby
-    #except KeyError:
-    #    return render(request, 'index.html')
+    except KeyError:
+        return render(request, 'index.html')
 
-    # TODO move below to role distribution and return current matching in distribution if game already started and / or its not the 
-    # player one who made the call
-
-    roles = {"Hitler": 1, "Faschist": 0, "Liberal": 0}
-
-    if (playerCount < 5):
-        print("Error 1")
-        return HttpResponseBadRequest # TODO replace with invalidGameState.html oder so
-
-    elif (playerCount < 7):
-
-        roles["Faschist"] = 1
-        roles["Liberal"] = playerCount-2
-        
-    elif (playerCount < 9):
-        
-        roles["Faschist"] = 2
-        roles["Liberal"] = playerCount-3
-
-    elif (playerCount < 11):
-
-        roles["Faschist"] = 3
-        roles["Liberal"] = playerCount-4
-    
-    else:
-        print("Error 2")
-        return HttpResponseBadRequest # TODO replace with invalidGameState.html oder so
-    
-    distribution = roleDistributionSH(roles, lobbyID)
+    distribution = roleDistributionSH(playerCount, playerID, lobbyID)
     if not distribution:
-        print("Error 3")
-        return HttpResponseBadRequest # TODO replace with invalidGameState.html oder so
-    
-    if (alterDB(matching=distribution) == ''):
         print("Error 4")
         return HttpResponseBadRequest # TODO replace with invalidGameState.html oder so
-        
+    
+    output = setOutputSH(playerID, playerName, distribution, playerCount)
+    
+    if (alterDB(idLobby=lobbyID, stat="game")) == '':
+        return HttpResponseBadRequest # TODO replace with invalidGameState.html oder so
+
     print(distribution)
-         
-    return render(request, 'game.html')
+    print(output)
+    return render(request, 'gameSH.html', output)
         
 # alter DB with ONE of the possible parameters
-def alterDB(idLobby=0, countLobby=None, removeFromLobby=None, addToLobby=None, matching=None, stat=None):
+def alterDB(idLobby:int=0, countLobby:int=None, removeFromLobby:str=None, addToLobby:list=None, matching:dict=None, stat:str=None):
     # TODO check if lobby is closed, if yes return ''
     dbAltered = False
     ref = ''
@@ -223,42 +198,111 @@ def alterDB(idLobby=0, countLobby=None, removeFromLobby=None, addToLobby=None, m
     return ref
 
 # set game mode to game -> no new players can enter and count player
-def blockLobby(lobbyID=0):
+def blockLobby(lobbyID:int=0):
 
-    lobbyList = ast.literal_eval(alterDB(idLobby=lobbyID, stat="game").lobbyList)
+    lobbyList = ast.literal_eval(alterDB(idLobby=lobbyID, stat="standby").lobbyList)
     if lobbyList != '':
         return len(lobbyList)
     return 0 
    
-def roleDistributionSH(roleTemplate:dict, idLobby:int = 0):
+def roleDistributionSH(playerCount:int, playerID:str, idLobby:int = 0)-> dict:
 
-    try: 
+    roles = {"Hitler": 1, "Faschist": 0, "Liberal": 0}
+
+    if (playerCount < 5):
+        print("Error 1")
+        return False
+
+    elif (playerCount < 7):
+
+        roles["Faschist"] = 1
+        roles["Liberal"] = playerCount-2
+        
+    elif (playerCount < 9):
+        
+        roles["Faschist"] = 2
+        roles["Liberal"] = playerCount-3
+
+    elif (playerCount < 11):
+
+        roles["Faschist"] = 3
+        roles["Liberal"] = playerCount-4
+    
+    else:
+        print("Error 2")
+        return False
+
+    try:
+    
         lobbies = Lobby.objects.filter(lobbyID=idLobby)
+        gameState = ''
         players = {}
+        distribution = {}
 
         for lobby in lobbies:
             
             players = ast.literal_eval(lobby.lobbyList)
+            distribution = ast.literal_eval(lobby.roleMatching)
+            gameState = lobby.status
             break
 
-        distribution = {}
+        # only player One should be able to start the game
+        lobbyHost = list(players.keys())[0]
+        if lobbyHost == playerID and gameState == 'standby':
 
-        for role in roleTemplate:
+            distribution = {}
 
-            while roleTemplate[role] != 0:
+            for role in roles:
 
-                currentPlayer = random.choice(list(players.items()))
-                distribution[currentPlayer] = role
+                while roles[role] != 0:
 
-                del players[currentPlayer[0]]
-                roleTemplate[role] -= 1
+                    currentPlayer = random.choice(list(players.items()))
+                    distribution[currentPlayer] = role
 
+                    del players[currentPlayer[0]]
+                    roles[role] -= 1
+
+            if (alterDB(matching=distribution) == ''):
+                print("Error 3")
+                return False
+        else:
+            print('#### Skipped!')
+        
     except Exception as e:
         print(e)
         return False
 
     return distribution
 
-def roleDistributionWW():
+def setOutputSH(playerID:str, playerName:str, distribution:dict, playerCount:int)-> dict: 
+    
+    role = distribution[(playerID, playerName)]
+    output = {"role": role, "allies": "", "hitler": ""}
+
+    faschists = []
+
+    if role != "Liberal":
+
+        for player in distribution:
+
+            playerRole = distribution[player]
+
+            if playerRole == "Hitler":
+
+                output["hitler"] = player[1]
+            
+            # only append other players names
+            elif playerRole == "Faschist" and player[0] != playerID:
+                faschists.append(player[1])
+
+        if playerCount < 7:
+            output["allies"] = faschists
+            
+        elif role != "Hitler":
+            output["allies"] = faschists
+            
+    return output
+
+def roleDistributionWW()-> dict:
     pass
 

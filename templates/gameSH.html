@@ -14,9 +14,26 @@
         </script>
     </head>
     <body>        
-        <h1>Hello</h1>
-        
-        
+        <h1 class="lobbyTop">Deine Rolle: {{role}}</h1>
+
+        {% if allies != "" %}
+            <div class="playerNames">
+                Andere Faschisten:
+            </div>
+        {% endif %}
+
+        {% for person in allies %}
+            <div id="allies" class="playerNames">
+               - {{person}}
+            </div>        
+        {% endfor %}
+
+        {% if role == "Faschist" %}
+            <div id="hitler" class="playerNames">
+                Hitler ist: {{hitler}}
+            </div>
+        {% endif %}
+
     </body>
 </html>
 
