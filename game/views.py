@@ -180,8 +180,11 @@ def alterDB(idLobby:int=0, countLobby:int=None, removeFromLobby:str=None, addToL
             elif (matching != None):
                 lobby.roleMatching = matching
 
+            # only allow to advance in state when its not a reset
             elif (stat != None):
-                lobby.status = stat
+                
+                if not (stat == "standby" and lobby.status == 'game'):
+                    lobby.status = stat
 
             elif (countLobby != None):
                 pass
@@ -248,7 +251,8 @@ def roleDistributionSH(playerCount:int, playerID:str, idLobby:int = 0)-> dict:
 
         # only player One should be able to start the game
         lobbyHost = list(players.keys())[0]
-        if lobbyHost == playerID and gameState == 'standby':
+        
+        if (lobbyHost == playerID) and (gameState == 'standby'):
 
             distribution = {}
 
@@ -306,3 +310,5 @@ def setOutputSH(playerID:str, playerName:str, distribution:dict, playerCount:int
 def roleDistributionWW()-> dict:
     pass
 
+def outputWW()-> dict:
+    pass
