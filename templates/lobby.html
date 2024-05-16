@@ -49,7 +49,7 @@
             $("#lobbyPlayerList").load(window.location.href + " #lobbyPlayerList" );            
             updateView();
             
-      }, 1000);
+      }, 2000);
       });  
       
       function init() {
@@ -93,7 +93,7 @@
       
       {% endfor %}
     </div>
-
+    
     <script>
         function updateView(){
 
@@ -121,10 +121,13 @@
             document.getElementById('modeSelect').style.visibility = 'visible';  
 
           } else {
-
             document.getElementById('figureStart').style.visibility = 'hidden';
-            document.getElementById('modeSelect').style.visibility = 'hidden';            
+            document.getElementById('modeSelect').style.visibility = 'hidden';
           }
+          
+          if ("{{gameState}}".localeCompare("lobby") != 0){
+            location.replace("/{{gameState}}");          
+          } 
         } 
 
         updateView();

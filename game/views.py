@@ -28,9 +28,16 @@ def lobby(request):
     except KeyError:
         return render(request, 'index.html')
     
-    # TODO error catching
-    lobbyList = ast.literal_eval(alterDB(idLobby=0, addToLobby=[playerID, playerName]).lobbyList)
-    return render(request, 'lobby.html', {'lobbyList': lobbyList})
+    lobby = alterDB(idLobby=0, addToLobby=[playerID, playerName])
+    if lobby == '':
+        return HttpResponseBadRequest
+    
+    lobbyList = ast.literal_eval(lobby.lobbyList)
+    if playerID in lobbyList:
+        return render(request, 'lobby.html', {'lobbyList': lobbyList, 'gameState': lobby.status})
+    
+    #TODO return gameClosed.html
+    return HttpResponseBadRequest
 
 def werwolfList(request):
     
@@ -119,7 +126,7 @@ def gameSH(request):
     
     output = setOutputSH(playerID, playerName, distribution, playerCount)
     
-    if (alterDB(idLobby=lobbyID, stat="game")) == '':
+    if (alterDB(idLobby=lobbyID, stat="gameSH")) == '':
         return HttpResponseBadRequest # TODO replace with invalidGameState.html oder so
 
     print(distribution)
@@ -130,7 +137,7 @@ def gameSH(request):
 def alterDB(idLobby:int=0, countLobby:int=None, removeFromLobby:str=None, addToLobby:list=None, matching:dict=None, stat:str=None):
     # TODO check if lobby is closed, if yes return ''
     dbAltered = False
-    ref = ''
+    res = ''
 
     while not dbAltered:
 
@@ -138,7 +145,7 @@ def alterDB(idLobby:int=0, countLobby:int=None, removeFromLobby:str=None, addToL
         
         for lobby in lobbies:
             
-            ref = lobby
+            res = lobby
 
             if (addToLobby != None):
                 
@@ -183,7 +190,7 @@ def alterDB(idLobby:int=0, countLobby:int=None, removeFromLobby:str=None, addToL
             # only allow to advance in state when its not a reset
             elif (stat != None):
                 
-                if not (stat == "standby" and lobby.status == 'game'):
+                if not (stat == "standby" and "game" in lobby.status):
                     lobby.status = stat
 
             elif (countLobby != None):
@@ -198,7 +205,7 @@ def alterDB(idLobby:int=0, countLobby:int=None, removeFromLobby:str=None, addToL
             dbAltered = True
             break
     
-    return ref
+    return res
 
 # set game mode to game -> no new players can enter and count player
 def blockLobby(lobbyID:int=0):

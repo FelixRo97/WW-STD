@@ -25,6 +25,11 @@
             <script>                                             
                 console.log(document.cookie)
 
+                // if redirected from other pace show start URL
+                if ((location.pathname+location.search).substr(1) != ''){
+                    location.replace("/");
+                }
+
                 const getSHA256Hash = async (input) => {
                     const textAsBuffer = new TextEncoder().encode(input);
                     const hashBuffer = await window.crypto.subtle.digest("SHA-256", textAsBuffer);
