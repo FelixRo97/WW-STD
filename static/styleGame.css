@@ -18,6 +18,16 @@ h1 {
 	margin-bottom: 2em;
 }
 
+button{
+
+	width: 7em;
+	height: 2.3em;
+	font-size: x-large; 
+	font-family: verdana;
+	margin-bottom: 0.7em;
+
+}
+
 .lobbyTop{
 	
 	text-align: center;
@@ -34,6 +44,13 @@ h1 {
 	letter-spacing: 0.1em;
 	text-shadow: 1px 1px 1px black, 1px -1px 1px black, -1px 1px 1px black, -1px -1px 1px black;
     
+}
+
+.center {
+
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
 #hitler {
