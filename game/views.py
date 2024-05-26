@@ -79,7 +79,7 @@ def addRoles(request):
     for role in roles:
         template[role] = ""
 
-    alterDB(matching=str(template))
+    alterDB(distribution=str(template))
     return JsonResponse({}, status=200)
 
 # Werwolf game session
@@ -129,12 +129,10 @@ def gameSH(request):
     if (alterDB(idLobby=lobbyID, stat="gameSH")) == '':
         return HttpResponseBadRequest # TODO replace with invalidGameState.html oder so
 
-    print(distribution)
-    print(output)
     return render(request, 'gameSH.html', output)
         
 # alter DB with ONE of the possible parameters
-def alterDB(idLobby:int=0, countLobby:int=None, removeFromLobby:str=None, addToLobby:list=None, matching:dict=None, stat:str=None):
+def alterDB(idLobby:int=0, removeFromLobby:str=None, addToLobby:list=None, distribution:dict=None, stat:str=None):
     # TODO check if lobby is closed, if yes return ''
     dbAltered = False
     res = ''
@@ -160,11 +158,11 @@ def alterDB(idLobby:int=0, countLobby:int=None, removeFromLobby:str=None, addToL
                    break
 
             # wait for exclusive access
-            if lobby.accessBlocked == 1:
+            if lobby.dBAccessBlocked == 1:
                 break
 
             # add player in DB
-            lobby.accessBlocked = 1
+            lobby.dBAccessBlocked = 1
             lobby.save()
             
             if (removeFromLobby != None):
@@ -184,8 +182,8 @@ def alterDB(idLobby:int=0, countLobby:int=None, removeFromLobby:str=None, addToL
                 lobbyList[playerID] = playerName            
                 lobby.lobbyList = str(lobbyList)     
                 
-            elif (matching != None):
-                lobby.roleMatching = matching
+            elif (distribution != None):
+                lobby.roleDistribution = distribution
 
             # only allow to advance in state when its not a reset
             elif (stat != None):
@@ -193,13 +191,10 @@ def alterDB(idLobby:int=0, countLobby:int=None, removeFromLobby:str=None, addToL
                 if not (stat == "standby" and "game" in lobby.status):
                     lobby.status = stat
 
-            elif (countLobby != None):
-                pass
-
             else:
                 print("##### Info: Nothing changed although called intentionally!")
             
-            lobby.accessBlocked = 0
+            lobby.dBAccessBlocked = 0
             lobby.save()
             
             dbAltered = True
@@ -262,7 +257,7 @@ def roleDistributionSH(playerCount:int, playerID:str, idLobby:int = 0)-> dict:
         for lobby in lobbies:
             
             players = ast.literal_eval(lobby.lobbyList)
-            distribution = ast.literal_eval(lobby.roleMatching)
+            distribution = ast.literal_eval(lobby.roleDistribution)
             gameState = lobby.status
             break
 
@@ -283,7 +278,7 @@ def roleDistributionSH(playerCount:int, playerID:str, idLobby:int = 0)-> dict:
                     del players[currentPlayer[0]]
                     roles[role] -= 1
 
-            if (alterDB(matching=distribution) == ''):
+            if (alterDB(distribution=distribution) == ''):
                 print("Error 3")
                 return False
         else:
@@ -331,6 +326,7 @@ def setOutputSH(playerID:str, playerName:str, distribution:dict, playerCount:int
             
     return output
 
+# TODO alterDB and indicate the request, query that parameter in setOutput
 def requestRoleSH(request):
     
     playerToWatch = ''
@@ -350,7 +346,7 @@ def requestRoleSH(request):
 
     for lobby in lobbies:
         
-        curDistribution = ast.literal_eval(lobby.roleMatching)
+        curDistribution = ast.literal_eval(lobby.roleDistribution)
         break
     
     for player in curDistribution:

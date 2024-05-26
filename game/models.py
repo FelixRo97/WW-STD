@@ -4,8 +4,8 @@ from django.db import models
 
 class Lobby(models.Model):    
     lobbyID = models.IntegerField(primary_key=True) 
-    lobbyCount = models.IntegerField() # useless?
+    messages = models.TextField()
     lobbyList = models.TextField()
-    roleMatching = models.TextField()
-    accessBlocked = models.IntegerField()
+    roleDistribution = models.TextField()
+    dBAccessBlocked = models.IntegerField()
     status = models.TextField() # lobby, standby or game
