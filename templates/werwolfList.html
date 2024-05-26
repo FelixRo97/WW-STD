@@ -40,7 +40,7 @@
             <!-- <button type="submit" onclick="sendRoles();" title="start" id="figureStart"><span>Cancel</span></button> -->
             
             <!-- TODO open lobby again when going back-->
-            <a href="/lobby">
+            <a href="/reopenLobby">
                 <img src="{% static 'images/back.webp' %}" id="figureBack" title="back" alt="back">
             </a>  
         </div>
@@ -155,7 +155,7 @@
                     error: function(data){
                         console.log("Error");
                         console.log(data);
-                        document.getElementById('title').innerHTML = "There was an error while processing. Please reload and try again.";                                                            
+                        document.getElementById('title').innerHTML = "Es gab ein Fehler, bitte lade die Seite neu und versuche es noch einmal";                                                            
                     }                    
                 });
             });

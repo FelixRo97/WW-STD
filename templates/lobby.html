@@ -41,6 +41,11 @@
     <script> 
       document.getElementById('currentPlayerName').innerHTML = 'Dein Name: ' + JSON.parse(getCookie('userData')).playerName;
 
+      // if redirected from other pace show start URL
+      if ((location.pathname+location.search).substr(1) != 'lobby'){
+            location.replace("/lobby");
+      }
+      
       $(document).ready(function(){
       setInterval(function(){
             

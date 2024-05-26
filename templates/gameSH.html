@@ -34,10 +34,115 @@
             </div>
         {% endif %}
 
-        <div class="center">
-            <button id="showRole"' type="button" onclick=''>Membership ansehen</button> 
-        </div>
+        
+        <form class="center"  method="POST">
+            {% csrf_token %}
+            <button id="showRole" type="button" onclick="viewRole();">Membership ansehen</button> 
+        </form>
+     
+        <select id="otherPlayers">
+        {% for player in lobby %}
+            <option value="{{player}}">{{player}}</option>
+        {% endfor %}        
+        </select>
 
+        <!-- Error message -->
+        <div class="playerNames" id="eM"></div>
+
+        <script>
+            function viewRole(){
+                
+                var selectSection = document.getElementById('otherPlayers');
+                var playerToWatch = selectSection.options[selectSection.selectedIndex].text;
+
+                if (confirm('Rolle von ' + playerToWatch + ' ansehen? Dies wird den anderen Spielern mitgeteilt.')){
+                    sendMessage(playerToWatch);
+                }
+            }
+            
+            function sendMessage(player){
+
+                // TODO make possible for multiple lobbies
+                lobbyID = 0;
+
+                $.ajax({
+                    type: 'POST',
+                    url:'/requestRoleSH',                                            
+                    data: {'playerToWatch': player, 'lobbyID': lobbyID},      
+                    success: function(data) {                            
+                        
+                        var playerRole = data[player];
+                        if (playerRole.localeCompare("Liberal") == 0){
+
+                            confirm( player + " ist natürlich einer von den guten und ein Liberaler!");
+                        
+                        }else{
+                            confirm( player + " ist offensichtlich ein böser Bube und gehört zu den Faschisten!");
+                        }
+                    }
+                    ,  
+                    error: function(data){
+                        console.log("Error");
+                        console.log(data);
+                        document.getElementById('eM').innerHTML = "Es gab ein Fehler, bitte lade die Seite neu und versuche es noch einmal";
+                    }                    
+                });
+            };
+
+            $(function() {                    
+                var csrftoken = getCookie('csrftoken');
+
+                /*
+                The functions below will create a header with csrftoken
+                */
+
+                function csrfSafeMethod(method) {
+                    // these HTTP methods do not require CSRF protection
+                    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+                }
+                function sameOrigin(url) {
+                    // test that a given url is a same-origin URL
+                    // url could be relative or scheme relative or absolute
+                    var host = document.location.host; // host + port
+                    var protocol = document.location.protocol;
+                    var sr_origin = '//' + host;
+                    var origin = protocol + sr_origin;
+                    // Allow absolute or scheme relative URLs to same origin
+                    return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
+                        (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
+                        // or any other URL that isn't scheme relative or absolute i.e relative.
+                        !(/^(\/\/|http:|https:).*/.test(url));
+                }
+
+                $.ajaxSetup({
+                    beforeSend: function(xhr, settings) {
+                        if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+                            // Send the token to same-origin, relative URLs only.
+                            // Send the token only if the method warrants CSRF protection
+                            // Using the CSRFToken value acquired earlier
+                            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                        }
+                    }
+                });
+
+            });
+
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie != '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = jQuery.trim(cookies[i]);
+                        // Does this cookie string begin with the name we want?
+                        if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }                                
+        </script>
     </body>
 </html>
 

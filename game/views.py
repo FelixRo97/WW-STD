@@ -214,7 +214,17 @@ def blockLobby(lobbyID:int=0):
     if lobbyList != '':
         return len(lobbyList)
     return 0 
-   
+
+# TODO make compatible with different lobbies
+def reopenLobby(request):
+    
+    lobbyID = 0    
+    lobbyList = ast.literal_eval(alterDB(idLobby=lobbyID, stat="lobby").lobbyList)
+    if lobbyList != '':
+        return lobby(request)
+    # TODO return invalid game State
+    return HttpResponseBadRequest
+
 def roleDistributionSH(playerCount:int, playerID:str, idLobby:int = 0)-> dict:
 
     roles = {"Hitler": 1, "Faschist": 0, "Liberal": 0}
@@ -287,6 +297,7 @@ def roleDistributionSH(playerCount:int, playerID:str, idLobby:int = 0)-> dict:
 
 def setOutputSH(playerID:str, playerName:str, distribution:dict, playerCount:int)-> dict: 
     
+    # dist {ID:Name, ...}
     role = distribution[(playerID, playerName)]
     output = {"role": role, "allies": "", "hitler": ""}
 
@@ -311,8 +322,48 @@ def setOutputSH(playerID:str, playerName:str, distribution:dict, playerCount:int
             
         elif role != "Hitler":
             output["allies"] = faschists
+
+    output["lobby"] = []
+    # only add other players
+    for player in distribution:
+        if player[1] != playerName:
+            output["lobby"].append(player[1])
             
     return output
+
+def requestRoleSH(request):
+    
+    playerToWatch = ''
+    lobbyID = ''
+
+    try:        
+        playerToWatch = request.POST.get('playerToWatch', '0')
+        lobbyID = int(request.POST.get('lobbyID', '0'))
+        
+    # if there were no cookies, player cannot be important for current lobby
+    except KeyError:
+        return JsonResponse({}, status=504)    
+    
+    lobbies = Lobby.objects.filter(lobbyID=lobbyID)
+    curDistribution = ''
+    resRole = ''
+
+    for lobby in lobbies:
+        
+        curDistribution = ast.literal_eval(lobby.roleMatching)
+        break
+    
+    for player in curDistribution:
+        
+        if player[1] == playerToWatch:
+           
+            resRole = curDistribution[player]
+
+            if resRole == "Hitler":
+                resRole = "Faschist"
+            break
+    
+    return JsonResponse({playerToWatch: resRole}, status=200)
 
 def roleDistributionWW()-> dict:
     pass
