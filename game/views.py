@@ -27,7 +27,7 @@ def lobby(request):
         
     # if there were no cookies, player cannot be important for current lobby
     except KeyError:
-        return render(request, 'index.html')
+        return render(request, 'invalidGameState.html')
     
     if playerName == "resetLobby":
         alterDB(idLobby=lobbyID, reset=True)
@@ -62,15 +62,16 @@ def werwolfList(request):
 def removePlayer(request):
         
     playerID = ''
+    lobbyID = 0
 
     try:                
         playerID = str(ast.literal_eval(request.COOKIES['userData']).get('playerID'))
         
     # if there were no cookies, player cannot be important for current lobby
     except KeyError:
-        return render(request, 'index.html')
+        return render(request, 'invalidGameState.html')
 
-    alterDB(idLobby=0, removeFromLobby=playerID)
+    alterDB(idLobby=lobbyID, removeFromLobby=playerID)
         
     return render(request, 'index.html')
 
@@ -108,18 +109,12 @@ def gameWW(request):
         
     # if there were no cookies, player cannot be important for current lobby
     except KeyError:
-        return render(request, 'index.html')
+        return render(request, 'invalidGameState.html')
     
     return render(request, 'game.html')
 
 # Sec Hit game session
 def gameSH(request):
-    
-    playerCount = blockLobby()
-    if playerCount == 0:
-        reopenLobby()
-        print("Error 0")
-        return render(request, 'invalidGameState.html')
     
     lobbyID = 0
     playerID = ''
@@ -131,15 +126,20 @@ def gameSH(request):
         
     # if there were no cookies, player cannot be important for current lobby
     except KeyError:
-        return render(request, 'index.html')
-
+        return render(request, 'invalidGameState.html')
+    
+    playerCount = blockLobby(playerID)
+    if playerCount == 0:
+        reopenLobby(request)
+        return render(request, 'invalidGameState.html')
+    
     distribution = roleDistributionSH(playerCount, playerID, lobbyID)
     if not distribution:
         print("Error 4")
         return render(request, 'index.html')
     
     output = setOutputSH(playerID, playerName, distribution, playerCount, lobbyID=lobbyID)
-    
+
     return render(request, 'gameSH.html', output)
         
 # alter DB with ONE of the possible parameters
@@ -225,12 +225,23 @@ def alterDB(idLobby:int=0, observation:dict=None, removeFromLobby:str=None, addT
     return res
 
 # set game mode to game -> no new players can enter and count player
-def blockLobby(lobbyID:int=0):
+def blockLobby(playerID:int, lobbyID:int=0,):
 
-    lobbyList = ast.literal_eval(alterDB(idLobby=lobbyID, stat="standby").lobbyList)
-    if lobbyList != '':
-        return len(lobbyList)
-    return 0 
+    lobby = Lobby.objects.filter(lobbyID=lobbyID)[0]
+    players = ast.literal_eval(lobby.lobbyList)
+
+    try:
+        lobbyHost = list(players.keys())[0]
+    except:
+        return 0
+
+    if (lobbyHost == playerID):
+
+        lobbyList = ast.literal_eval(alterDB(idLobby=lobbyID, stat="standby").lobbyList)
+        if lobbyList != '':
+            return len(lobbyList)
+    
+    return len(players)
 
 # TODO make compatible with different lobbies (read from cookies?)
 def reopenLobby(request):
