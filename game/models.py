@@ -4,7 +4,7 @@ from django.db import models
 
 class Lobby(models.Model):    
     lobbyID = models.IntegerField(primary_key=True) 
-    messages = models.TextField()
+    observations = models.TextField()
     lobbyList = models.TextField()
     roleDistribution = models.TextField()
     dBAccessBlocked = models.IntegerField()

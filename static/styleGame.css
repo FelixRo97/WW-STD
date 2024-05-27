@@ -22,7 +22,7 @@ h1 {
 
 button{
 
-	width: 7em;
+	width: 7.4em;
 	height: 2.8em;
 	font-size: x-large; 
 	font-family: verdana;
@@ -38,7 +38,6 @@ select {
 	font-family: verdana;
 	width: 180px;
 	margin-bottom: 3%;
-	text-align: center;
 	
 }
 
@@ -72,4 +71,17 @@ select {
 
     margin-top: 2em;
 
+}
+
+#observation {
+    
+	color: rgb(236, 66, 66);
+	text-align: center;
+	font-size: 2.7em; 
+	font-family: verdana;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	text-shadow: 1px 1px 1px black, 1px -1px 1px black, -1px 1px 1px black, -1px -1px 1px black;
+	margin-bottom: 0.7em;
+    
 }

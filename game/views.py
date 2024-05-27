@@ -124,15 +124,15 @@ def gameSH(request):
         print("Error 4")
         return HttpResponseBadRequest # TODO replace with invalidGameState.html oder so
     
-    output = setOutputSH(playerID, playerName, distribution, playerCount)
+    output = setOutputSH(playerID, playerName, distribution, playerCount, lobbyID=lobbyID)
     
     if (alterDB(idLobby=lobbyID, stat="gameSH")) == '':
         return HttpResponseBadRequest # TODO replace with invalidGameState.html oder so
-
+    
     return render(request, 'gameSH.html', output)
         
 # alter DB with ONE of the possible parameters
-def alterDB(idLobby:int=0, removeFromLobby:str=None, addToLobby:list=None, distribution:dict=None, stat:str=None):
+def alterDB(idLobby:int=0, observation:dict=None, removeFromLobby:str=None, addToLobby:list=None, distribution:dict=None, stat:str=None):
     # TODO check if lobby is closed, if yes return ''
     dbAltered = False
     res = ''
@@ -145,7 +145,7 @@ def alterDB(idLobby:int=0, removeFromLobby:str=None, addToLobby:list=None, distr
             
             res = lobby
 
-            if (addToLobby != None):
+            if addToLobby != None:
                 
                 playerID = addToLobby[0]
                 playerName = addToLobby[1]
@@ -165,7 +165,7 @@ def alterDB(idLobby:int=0, removeFromLobby:str=None, addToLobby:list=None, distr
             lobby.dBAccessBlocked = 1
             lobby.save()
             
-            if (removeFromLobby != None):
+            if removeFromLobby != None:
 
                 lobbyList = ast.literal_eval(lobby.lobbyList)
                 if removeFromLobby in lobbyList:
@@ -173,7 +173,7 @@ def alterDB(idLobby:int=0, removeFromLobby:str=None, addToLobby:list=None, distr
 
                 lobby.lobbyList = str(lobbyList)
 
-            elif (addToLobby != None):
+            elif addToLobby != None:
                 
                 playerID = addToLobby[0]
                 playerName = addToLobby[1]
@@ -182,14 +182,20 @@ def alterDB(idLobby:int=0, removeFromLobby:str=None, addToLobby:list=None, distr
                 lobbyList[playerID] = playerName            
                 lobby.lobbyList = str(lobbyList)     
                 
-            elif (distribution != None):
+            elif distribution != None:
                 lobby.roleDistribution = distribution
 
             # only allow to advance in state when its not a reset
-            elif (stat != None):
+            elif stat != None:
                 
                 if not (stat == "standby" and "game" in lobby.status):
                     lobby.status = stat
+
+            elif observation!= None:
+
+                observations = ast.literal_eval(lobby.observations)
+                observations.append(observation)
+                lobby.observations = observations
 
             else:
                 print("##### Info: Nothing changed although called intentionally!")
@@ -210,7 +216,7 @@ def blockLobby(lobbyID:int=0):
         return len(lobbyList)
     return 0 
 
-# TODO make compatible with different lobbies
+# TODO make compatible with different lobbies (read from cookies?)
 def reopenLobby(request):
     
     lobbyID = 0    
@@ -290,7 +296,7 @@ def roleDistributionSH(playerCount:int, playerID:str, idLobby:int = 0)-> dict:
 
     return distribution
 
-def setOutputSH(playerID:str, playerName:str, distribution:dict, playerCount:int)-> dict: 
+def setOutputSH(playerID:str, playerName:str, distribution:dict, playerCount:int, lobbyID:int)-> dict: 
     
     # dist {ID:Name, ...}
     role = distribution[(playerID, playerName)]
@@ -323,18 +329,22 @@ def setOutputSH(playerID:str, playerName:str, distribution:dict, playerCount:int
     for player in distribution:
         if player[1] != playerName:
             output["lobby"].append(player[1])
-            
+
+    lobby = Lobby.objects.filter(lobbyID=lobbyID)[0]
+    output["observations"] = ast.literal_eval(lobby.observations)
+    
     return output
 
 # TODO alterDB and indicate the request, query that parameter in setOutput
 def requestRoleSH(request):
     
+    playerName = ''
     playerToWatch = ''
-    lobbyID = ''
+    lobbyID = 0
 
     try:        
         playerToWatch = request.POST.get('playerToWatch', '0')
-        lobbyID = int(request.POST.get('lobbyID', '0'))
+        playerName = str(ast.literal_eval(request.COOKIES['userData']).get('playerName'))
         
     # if there were no cookies, player cannot be important for current lobby
     except KeyError:
@@ -358,7 +368,8 @@ def requestRoleSH(request):
             if resRole == "Hitler":
                 resRole = "Faschist"
             break
-    
+
+    alterDB(observation=[playerName, playerToWatch])
     return JsonResponse({playerToWatch: resRole}, status=200)
 
 def roleDistributionWW()-> dict:

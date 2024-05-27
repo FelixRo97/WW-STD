@@ -34,22 +34,43 @@
             </div>
         {% endif %}
 
+        <div id="observations">
+            {% for observer, observed in observations %}
+            <div id="observation">
+                {{observer}} hat sich {{observed}} angeschaut!
+            </div>
+            {% endfor %}     
+        </div>
         
         <form class="center"  method="POST">
             {% csrf_token %}
             <button id="showRole" type="button" onclick="viewRole();">Membership ansehen</button> 
         </form>
      
-        <select class="center" id="otherPlayers">
-        {% for player in lobby %}
-            <option value="{{player}}">{{player}}</option>
-        {% endfor %}        
-        </select>
-
+        <div class="center">
+            <select  id="otherPlayers">
+            {% for player in lobby %}
+                <option value="{{player}}">{{player}}</option>
+            {% endfor %}        
+            </select>
+        </div>
+        
         <!-- Error message -->
         <div class="playerNames" id="eM"></div>
 
         <script>
+
+            $(document).ready(function(){
+                setInterval(function(){
+                        
+                        // TODO reload with POST
+                        //$("#lobbyPlayerList").load(window.location.reload());
+                        $("#observations").load(window.location.href + " #observations" );            
+                        updateView();
+                        
+                }, 3000);
+                });  
+
             function viewRole(){
                 
                 var selectSection = document.getElementById('otherPlayers');
@@ -68,15 +89,16 @@
                 $.ajax({
                     type: 'POST',
                     url:'/requestRoleSH',                                            
-                    data: {'playerToWatch': player, 'lobbyID': lobbyID},      
+                    data: {'playerToWatch': player},      
                     success: function(data) {                            
                         
                         var playerRole = data[player];
                         if (playerRole.localeCompare("Liberal") == 0){
 
-                            confirm( player + " ist natürlich einer von den guten und ein Liberaler!");
+                            confirm( player + " gehört natürlich zu den Guten und ist Liberal!");
                         
                         }else{
+
                             confirm( player + " ist offensichtlich ein böser Bube und gehört zu den Faschisten!");
                         }
                     }

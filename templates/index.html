@@ -19,7 +19,7 @@
              
             <form id="start" action="/lobby" onsubmit="return validateForm();">  
                 <!-- {% csrf_token %} -->
-                <input type="text" id="name" placeholder="Dein Name" pattern="[A-Za-z]+" oninput="setCustomValidity('')"></input><br>                       
+                <input type="text" id="name" placeholder="Dein Name" pattern="[A-Za-z]+" spellcheck="false" oninput="setCustomValidity('')"></input><br>                       
             </form>          
 
             <script>                                             
