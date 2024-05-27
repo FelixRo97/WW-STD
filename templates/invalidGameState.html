@@ -1,0 +1,32 @@
+{% load static%}
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset ="UTF-8">
+    <title>Lobby</title>
+    <link rel="stylesheet" href="{% static 'styleLobby.css' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'images/std-icon.png' %}">
+    <script
+        src="https://code.jquery.com/jquery-3.2.1.min.js"
+        integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous">
+    </script>
+  </head>
+  <body>
+    <div class="playerNames">
+        The current game state is invalid. <br>
+        You will be redirected in a few seconds... 
+    </div>
+                
+    <script> 
+        $(document).ready(function(){
+        setInterval(function(){
+            location.replace("/");
+                
+        }, 6000);
+        });  
+    </script>
+
+  </body>
+</html>

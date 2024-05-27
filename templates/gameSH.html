@@ -62,11 +62,9 @@
 
             $(document).ready(function(){
                 setInterval(function(){
-                        
-                        // TODO reload with POST
-                        //$("#lobbyPlayerList").load(window.location.reload());
-                        $("#observations").load(window.location.href + " #observations" );            
-                        updateView();
+                    
+                    $("#observations").load(window.location.href + " #observations" );            
+                    updateView();
                         
                 }, 3000);
                 });  
