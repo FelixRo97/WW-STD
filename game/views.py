@@ -38,8 +38,10 @@ def lobby(request):
     
     for player in lobbyList:
         if playerName == lobbyList[player] and player != playerID:
-            # TODO replace with change name HTML
-            return HttpResponseBadRequest
+            return render(request, 'changeName.html')
+        
+    if lobby.status != 'lobby':
+        return render(request, 'gameClosed.html')
             
     lobby = alterDB(idLobby=lobbyID, addToLobby=[playerID, playerName])
     if lobby == '':
@@ -49,13 +51,10 @@ def lobby(request):
     if playerID in lobbyList:
         return render(request, 'lobby.html', {'lobbyList': lobbyList, 'gameState': lobby.status})
     
-    #TODO return gameClosed.html
-    return HttpResponseBadRequest
+    return render(request, 'invalidGameState.html')
 
 def werwolfList(request):
     
-    # TODO block lobby for new player
-
     playerCount = blockLobby()
     return render(request, 'werwolfList.html', {'playerCount': playerCount})
 
@@ -98,7 +97,6 @@ def addRoles(request):
 
 # Werwolf game session
 def gameWW(request):
-    # TODO block lobby & game session for new player from now on
 
     playerID = ''
     playerName = ''
@@ -165,6 +163,10 @@ def alterDB(idLobby:int=0, observation:dict=None, removeFromLobby:str=None, addT
             if playerInDB:                
                 dbAltered = True
                 break
+
+        # only allow changes when game is started to: observation or reset
+        if lobby.status == 'gameSH' and (observation == None and not reset):
+            return res
 
         # wait for exclusive access
         if lobby.dBAccessBlocked == 1:
@@ -358,7 +360,6 @@ def setOutputSH(playerID:str, playerName:str, distribution:dict, playerCount:int
     
     return output
 
-# TODO alterDB and indicate the request, query that parameter in setOutput
 def requestRoleSH(request):
     
     playerName = ''
