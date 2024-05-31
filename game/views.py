@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponseBadRequest, JsonResponse
+from django.http import JsonResponse
 import ast
 from .models import Lobby
 import random
@@ -28,8 +28,11 @@ def lobby(request):
         return render(request, 'invalidGameState.html')
     
     if playerName == "resetLobby":
-        alterDB(idLobby=lobbyID, reset=True)
-        return render(request, 'resetSuccess.html')
+        
+        if alterDB(idLobby=lobbyID, reset=True) != None:
+            return render(request, 'resetSuccess.html')
+        
+        return render(request, 'invalidGameState.html')
     
     lobby = Lobby.objects.filter(lobbyID=lobbyID)[0]
     lobbyList = ast.literal_eval(lobby.lobbyList)
@@ -48,8 +51,8 @@ def lobby(request):
         return render(request, 'gameClosed.html')
             
     lobby = alterDB(idLobby=lobbyID, addToLobby=[playerID, playerName])
-    if lobby == '':
-        return HttpResponseBadRequest
+    if lobby == None:
+        return render(request, 'invalidGameState.html')
     
     lobbyList = ast.literal_eval(lobby.lobbyList)
     if playerID in lobbyList:
@@ -69,7 +72,8 @@ def removePlayer(request):
     except KeyError:
         return render(request, 'invalidGameState.html')
 
-    alterDB(idLobby=lobbyID, removeFromLobby=playerID)
+    if alterDB(idLobby=lobbyID, removeFromLobby=playerID) == None:
+        return render(request, 'invalidGameState.html')
         
     return render(request, 'index.html')
 
@@ -91,6 +95,7 @@ def werwolfList(request):
 # add specified Werwolf roles
 def addRoles(request):
     
+    lobbyID = 0
     roles = ''
 
     try:                
@@ -99,17 +104,22 @@ def addRoles(request):
         
     # if there were no cookies, player cannot be important for current lobby
     except KeyError:
-        return HttpResponseBadRequest
+        return JsonResponse({}, status=501)
     
     template = {}
 
+    # TODO ignore upper/lower case differences
     for role in roles:
+        
+        role = role.lower()
         if role in template:
-            template[role] += 1
+            template[role][0] += 1
         else:
-            template[role] = 1
+            template[role] = [1]
 
-    alterDB(distribution=str(template))
+    if alterDB(idLobby=lobbyID, roles=str(template)) == None:
+        return JsonResponse({}, status=502)
+
     return JsonResponse({}, status=200)
 
 # Sec Hit game session
@@ -161,7 +171,8 @@ def gameWW(request):
         reopenLobby(request)
         return render(request, 'invalidGameState.html')
     
-    distribution = roleDistributionWW(playerCount, playerID, lobbyID)
+    distribution = roleDistributionWW(playerID, lobbyID)
+    print(distribution)
     if len(distribution) != playerCount:
         print("Error 4")
         return render(request, 'invalidGameState.html')
@@ -170,88 +181,97 @@ def gameWW(request):
     return render(request, 'gameWW.html')
         
 # alter DB with ONE of the possible parameters
-def alterDB(idLobby:int=0, observation:dict=None, removeFromLobby:str=None, addToLobby:list=None, distribution:dict=None, stat:str=None, reset:bool=False):
-    # TODO check if lobby is closed, if yes return ''
+def alterDB(idLobby:int=0, observation:dict=None, removeFromLobby:str=None, addToLobby:list=None, distribution:dict=None, roles:dict=None,stat:str=None, reset:bool=False):
     
     dbAltered = False
-    res = ''
+    res = None
 
-    while not dbAltered:
+    try:
 
-        lobby = Lobby.objects.filter(lobbyID=idLobby)[0]
-        res = lobby
-       
-        if addToLobby != None:
-            
-            playerID = addToLobby[0]
-            playerName = addToLobby[1]
-            lobbyList = ast.literal_eval(lobby.lobbyList)
+        while not dbAltered:
 
-            # check if DB update is necessary
-            playerInDB =playerID in lobbyList and lobbyList[playerID] == playerName # addToLobby = [playerID, playerName]
-            if playerInDB:                
-                dbAltered = True
-                break
-
-        # only allow changes when game is started to: observation or reset
-        if lobby.status == 'gameSH' and (observation == None and not reset):
-            return res
-
-        # wait for exclusive access
-        if lobby.dBAccessBlocked == 1:
-            continue
-
-        # add player in DB
-        lobby.dBAccessBlocked = 1
-        lobby.save()
-       
-        if removeFromLobby != None:
-
-            lobbyList = ast.literal_eval(lobby.lobbyList)
-            if removeFromLobby in lobbyList:
-                del lobbyList[removeFromLobby]
-
-            lobby.lobbyList = str(lobbyList)
-
-        elif addToLobby != None:
-            
-            playerID = addToLobby[0]
-            playerName = addToLobby[1]
-            lobbyList = ast.literal_eval(lobby.lobbyList)
-
-            lobbyList[playerID] = playerName            
-            lobby.lobbyList = str(lobbyList)     
-            
-        elif distribution != None:
-            lobby.roleDistribution = distribution
-
-        # only allow to advance in state when its not a reset
-        elif stat != None:
-            
-            if not (stat == "standby" and "game" in lobby.status):
-                lobby.status = stat
-
-        elif observation!= None:
-
-            observations = ast.literal_eval(lobby.observations)
-            observations.append(observation)
-            lobby.observations = observations
-
-        elif reset == True:
-
-            lobby.observations = []
-            lobby.lobbyList = {}
-            lobby.roleDistribution = {}
-            lobby.status = "lobby"
-
-        else:
-            print("##### Info: Nothing changed although called intentionally!")
+            lobby = Lobby.objects.filter(lobbyID=idLobby)[0]
+            res = lobby
         
-        lobby.dBAccessBlocked = 0
-        lobby.save()
+            if addToLobby != None:
+                
+                playerID = addToLobby[0]
+                playerName = addToLobby[1]
+                lobbyList = ast.literal_eval(lobby.lobbyList)
+
+                # check if DB update is necessary
+                playerInDB =playerID in lobbyList and lobbyList[playerID] == playerName # addToLobby = [playerID, playerName]
+                if playerInDB:                
+                    dbAltered = True
+                    break
+
+            # only allow changes when game is started to: observation or reset
+            if 'game' in lobby.status and (observation == None and not reset):
+                return res
+
+            # wait for exclusive access
+            if lobby.dBAccessBlocked == 1:
+                continue
+
+            # add player in DB
+            lobby.dBAccessBlocked = 1
+            lobby.save()
         
-        dbAltered = True
-        break
+            if removeFromLobby != None:
+
+                lobbyList = ast.literal_eval(lobby.lobbyList)
+                if removeFromLobby in lobbyList:
+                    del lobbyList[removeFromLobby]
+
+                lobby.lobbyList = str(lobbyList)
+
+            elif addToLobby != None:
+                
+                playerID = addToLobby[0]
+                playerName = addToLobby[1]
+                lobbyList = ast.literal_eval(lobby.lobbyList)
+
+                lobbyList[playerID] = playerName            
+                lobby.lobbyList = str(lobbyList)     
+                
+            elif distribution != None:
+                lobby.roleDistribution = distribution
+
+            elif roles != None:
+                lobby.wwRoles = roles
+
+            # only allow to advance in state when its not a reset
+            elif stat != None:
+                
+                if not (stat == "standby" and "game" in lobby.status):
+                    lobby.status = stat
+                    print('Altered to ' + stat)
+
+            elif observation!= None:
+
+                observations = ast.literal_eval(lobby.observations)
+                observations.append(observation)
+                lobby.observations = observations
+
+            elif reset == True:
+
+                lobby.observations = []
+                lobby.lobbyList = {}
+                lobby.roleDistribution = {}
+                lobby.status = "lobby"
+
+            else:
+                print("##### Info: Nothing changed although called intentionally!")
+            
+            lobby.dBAccessBlocked = 0
+            lobby.save()
+            
+            dbAltered = True
+            break
+    
+    except Exception as e:
+        print(e)
+        return None
     
     return res
 
@@ -269,8 +289,10 @@ def blockLobby(playerID:int, lobbyID:int=0,):
     if (lobbyHost == playerID):
 
         lobbyList = ast.literal_eval(alterDB(idLobby=lobbyID, stat="standby").lobbyList)
-        if lobbyList != '':
-            return len(lobbyList)
+        if lobbyList == None:
+            return 0    
+        
+        return len(lobbyList)
     
     return len(players)
 
@@ -279,9 +301,9 @@ def reopenLobby(request):
     
     lobbyID = 0    
     lobbyList = ast.literal_eval(alterDB(idLobby=lobbyID, stat="lobby").lobbyList)
-    if lobbyList != '':
-        return lobby(request)
-    return render(request, 'index.html')
+    if lobbyList == None:
+        return render(request, 'invalidGameState.html')
+    return lobby(request)
 
 def roleDistributionSH(playerCount:int, playerID:str, idLobby:int = 0)-> dict:
 
@@ -335,9 +357,10 @@ def roleDistributionSH(playerCount:int, playerID:str, idLobby:int = 0)-> dict:
                     del players[currentPlayer[0]]
                     roles[role] -= 1
 
-            if (alterDB(distribution=distribution, stat="gameSH") == ''):
+            alteredOnce = alterDB(distribution=distribution)
+            alteredTwice = alterDB(stat="gameSH")
+            if alteredOnce == None or alteredTwice == None:
                 print("Error 3")
-                return False
         else:
             print('#### Skipped!')
         
@@ -408,24 +431,29 @@ def requestRoleSH(request):
     
     for player in curDistribution:
         
-        if player[1] == playerToWatch:
-           
+        if str(player[1]) == playerToWatch:
+            
             resRole = curDistribution[player]
 
             if resRole == "Hitler":
                 resRole = "Faschist"
             break
+        else:
+            print(player[1])
+            print(playerToWatch)
 
-    alterDB(observation=[playerName, playerToWatch])
+    if alterDB(observation=[playerName, playerToWatch]) == None:
+        return JsonResponse({}, status=503)
+    
     return JsonResponse({playerToWatch: resRole}, status=200)
 
-def roleDistributionWW(playerCount:int, playerID:str, idLobby:int = 0)-> dict:
+def roleDistributionWW(playerID:str, idLobby:int = 0)-> dict:
 
     try:
     
         lobby = Lobby.objects.filter(lobbyID=idLobby)[0]
 
-        roles = ast.literal_eval(lobby.roleDistribution)
+        roles = ast.literal_eval(lobby.wwRoles)
         players = ast.literal_eval(lobby.lobbyList)
         distribution = ast.literal_eval(lobby.roleDistribution)
         gameState = lobby.status
@@ -439,17 +467,19 @@ def roleDistributionWW(playerCount:int, playerID:str, idLobby:int = 0)-> dict:
 
             for role in roles:
 
-                while roles[role] != 0:
+                while roles[role][0] != 0:
 
                     currentPlayer = random.choice(list(players.items()))
                     distribution[currentPlayer] = role
 
                     del players[currentPlayer[0]]
-                    roles[role] -= 1
+                    roles[role][0] -= 1
 
-            if (alterDB(distribution=distribution, stat="gameSH") == ''):
+            alteredOnce = alterDB(distribution=distribution)
+            alteredTwice = alterDB(stat="gameWW")
+            if alteredOnce == None or alteredTwice == None:
                 print("Error 3")
-                return False
+
         else:
             print('#### Skipped!')
         
