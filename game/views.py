@@ -13,8 +13,6 @@ def lobby(request):
     #if request.method != 'POST': 
     #    return HttpResponseBadRequest  
     
-
-    # TODO make player names unique
     # TODO if lobby status is ingame and player is in lobby list -> forward to game session else show that session is closed
 
     playerName = ''
@@ -36,11 +34,17 @@ def lobby(request):
     lobby = Lobby.objects.filter(lobbyID=lobbyID)[0]
     lobbyList = ast.literal_eval(lobby.lobbyList)
     
+    isInLobby = False
     for player in lobbyList:
-        if playerName == lobbyList[player] and player != playerID:
-            return render(request, 'changeName.html')
-        
-    if lobby.status != 'lobby':
+        if playerName == lobbyList[player]:
+            
+            if player != playerID:
+                return render(request, 'changeName.html')
+            else:
+                isInLobby = True
+    
+    # block new player if lobby is in standby+ status
+    if not isInLobby and lobby.status != 'lobby':
         return render(request, 'gameClosed.html')
             
     lobby = alterDB(idLobby=lobbyID, addToLobby=[playerID, playerName])
@@ -52,11 +56,6 @@ def lobby(request):
         return render(request, 'lobby.html', {'lobbyList': lobbyList, 'gameState': lobby.status})
     
     return render(request, 'invalidGameState.html')
-
-def werwolfList(request):
-    
-    playerCount = blockLobby()
-    return render(request, 'werwolfList.html', {'playerCount': playerCount})
 
 def removePlayer(request):
         
@@ -74,6 +73,21 @@ def removePlayer(request):
         
     return render(request, 'index.html')
 
+def werwolfList(request):
+    
+    playerID = ''
+    lobbyID = 0
+
+    try:                
+        playerID = str(ast.literal_eval(request.COOKIES['userData']).get('playerID'))
+        
+    # if there were no cookies, player cannot be important for current lobby
+    except KeyError:
+        return render(request, 'invalidGameState.html')
+
+    playerCount = blockLobby(playerID, lobbyID)
+    return render(request, 'werwolfList.html', {'playerCount': playerCount})
+
 # add specified Werwolf roles
 def addRoles(request):
     
@@ -90,26 +104,13 @@ def addRoles(request):
     template = {}
 
     for role in roles:
-        template[role] = ""
+        if role in template:
+            template[role] += 1
+        else:
+            template[role] = 1
 
     alterDB(distribution=str(template))
     return JsonResponse({}, status=200)
-
-# Werwolf game session
-def gameWW(request):
-
-    playerID = ''
-    playerName = ''
-
-    try:                
-        playerID = str(ast.literal_eval(request.COOKIES['userData']).get('playerID'))
-        playerName = str(ast.literal_eval(request.COOKIES['userData']).get('playerName'))
-        
-    # if there were no cookies, player cannot be important for current lobby
-    except KeyError:
-        return render(request, 'invalidGameState.html')
-    
-    return render(request, 'game.html')
 
 # Sec Hit game session
 def gameSH(request):
@@ -132,13 +133,41 @@ def gameSH(request):
         return render(request, 'invalidGameState.html')
     
     distribution = roleDistributionSH(playerCount, playerID, lobbyID)
-    if not distribution:
+    if len(distribution) != playerCount:
         print("Error 4")
-        return render(request, 'index.html')
+        return render(request, 'invalidGameState.html')
     
     output = setOutputSH(playerID, playerName, distribution, playerCount, lobbyID=lobbyID)
 
     return render(request, 'gameSH.html', output)
+
+# Werwolf game session
+def gameWW(request):
+
+    lobbyID = 0
+    playerID = ''
+    playerName = ''
+
+    try:                
+        playerID = str(ast.literal_eval(request.COOKIES['userData']).get('playerID'))
+        playerName = str(ast.literal_eval(request.COOKIES['userData']).get('playerName'))
+        
+    # if there were no cookies, player cannot be important for current lobby
+    except KeyError:
+        return render(request, 'invalidGameState.html')
+    
+    playerCount = blockLobby(playerID)
+    if playerCount == 0:
+        reopenLobby(request)
+        return render(request, 'invalidGameState.html')
+    
+    distribution = roleDistributionWW(playerCount, playerID, lobbyID)
+    if len(distribution) != playerCount:
+        print("Error 4")
+        return render(request, 'invalidGameState.html')
+
+    
+    return render(request, 'gameWW.html')
         
 # alter DB with ONE of the possible parameters
 def alterDB(idLobby:int=0, observation:dict=None, removeFromLobby:str=None, addToLobby:list=None, distribution:dict=None, stat:str=None, reset:bool=False):
@@ -284,9 +313,6 @@ def roleDistributionSH(playerCount:int, playerID:str, idLobby:int = 0)-> dict:
     try:
     
         lobby = Lobby.objects.filter(lobbyID=idLobby)[0]
-        gameState = ''
-        players = {}
-        distribution = {}
 
         players = ast.literal_eval(lobby.lobbyList)
         distribution = ast.literal_eval(lobby.roleDistribution)
@@ -317,7 +343,7 @@ def roleDistributionSH(playerCount:int, playerID:str, idLobby:int = 0)-> dict:
         
     except Exception as e:
         print(e)
-        return False
+        return {}
 
     return distribution
 
@@ -393,8 +419,45 @@ def requestRoleSH(request):
     alterDB(observation=[playerName, playerToWatch])
     return JsonResponse({playerToWatch: resRole}, status=200)
 
-def roleDistributionWW()-> dict:
-    pass
+def roleDistributionWW(playerCount:int, playerID:str, idLobby:int = 0)-> dict:
+
+    try:
+    
+        lobby = Lobby.objects.filter(lobbyID=idLobby)[0]
+
+        roles = ast.literal_eval(lobby.roleDistribution)
+        players = ast.literal_eval(lobby.lobbyList)
+        distribution = ast.literal_eval(lobby.roleDistribution)
+        gameState = lobby.status
+
+        # only player One should be able to start the game
+        lobbyHost = list(players.keys())[0]
+        
+        if (lobbyHost == playerID) and (gameState == 'standby'):
+
+            distribution = {}
+
+            for role in roles:
+
+                while roles[role] != 0:
+
+                    currentPlayer = random.choice(list(players.items()))
+                    distribution[currentPlayer] = role
+
+                    del players[currentPlayer[0]]
+                    roles[role] -= 1
+
+            if (alterDB(distribution=distribution, stat="gameSH") == ''):
+                print("Error 3")
+                return False
+        else:
+            print('#### Skipped!')
+        
+    except Exception as e:
+        print(e)
+        return {}
+
+    return distribution
 
 def outputWW()-> dict:
     pass

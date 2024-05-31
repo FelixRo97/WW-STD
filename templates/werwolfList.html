@@ -37,16 +37,13 @@
         <div class="figures">                    
             
             <img src="{% static 'images/play.webp' %}" id="figureStart" title="start" alt="start" onclick="startGame();"> 
-            <!-- <button type="submit" onclick="sendRoles();" title="start" id="figureStart"><span>Cancel</span></button> -->
             
-            <!-- TODO open lobby again when going back-->
             <a href="/reopenLobby">
                 <img src="{% static 'images/back.webp' %}" id="figureBack" title="back" alt="back">
             </a>  
         </div>
 
         <form id="forwardLobby"  method="POST">
-            <!-- {% csrf_token %} add in form method="POST"  action="/forward/ action="/gameWW"-->
             {% csrf_token %}
             <button id="startButton"></button>
         </form>
@@ -144,12 +141,13 @@
                 var fd = new FormData();
                 fd.append("roles", "1");                                        
 
+                
                 $.ajax({
                     type: 'POST',
                     url:'/addRoles',                                            
                     data: {'roles': JSON.stringify(roleArray)},      
                     success: function(data) {                            
-                        location.replace('/gameSH');
+                        location.replace('/gameWW');
                     }
                     ,  
                     error: function(data){

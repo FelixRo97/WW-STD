@@ -16,44 +16,7 @@
     <body>        
         <h1 class="lobbyTop">Deine Rolle: {{role}}</h1>
 
-        {% if allies != "" %}
-            <div class="playerNames">
-                Andere Faschisten:
-            </div>
-        {% endif %}
-
-        {% for person in allies %}
-            <div id="allies" class="playerNames">
-               - {{person}}
-            </div>        
-        {% endfor %}
-
-        {% if role == "Faschist" %}
-            <div id="hitler" class="playerNames">
-                Hitler ist: {{hitler}}
-            </div>
-        {% endif %}
-
-        <div id="observations">
-            {% for observer, observed in observations %}
-            <div id="observation">
-                {{observer}} hat sich {{observed}} angeschaut!
-            </div>
-            {% endfor %}     
-        </div>
-        
-        <form class="center"  method="POST">
-            {% csrf_token %}
-            <button id="showRole" type="button" onclick="viewRole();">Membership ansehen</button> 
-        </form>
-     
-        <div class="center">
-            <select  id="otherPlayers">
-            {% for player in lobby %}
-                <option value="{{player}}">{{player}}</option>
-            {% endfor %}        
-            </select>
-        </div>
+       
         
         <!-- Error message -->
         <div class="playerNames" id="eM"></div>

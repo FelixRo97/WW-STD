@@ -130,7 +130,7 @@
             document.getElementById('modeSelect').style.visibility = 'hidden';
           }
           
-          if ("{{gameState}}".localeCompare("lobby") != 0){
+          if ("{{gameState}}".includes("game")){
             location.replace("/{{gameState}}");          
           } 
         } 
