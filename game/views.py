@@ -13,7 +13,10 @@ def lobby(request):
     #if request.method != 'POST': 
     #    return HttpResponseBadRequest  
     
-    # TODO if lobby status is ingame and player is in lobby list -> forward to game session else show that session is closed
+    # General note:
+    # playerID and playerName were supposed to two players with the same name
+    # but since this is not reasonable in most cases
+    # both can be exchanged for each other at any point in the code (in theory at least :D)
 
     playerName = ''
     playerID = ''
@@ -143,6 +146,8 @@ def gameSH(request):
         return render(request, 'invalidGameState.html')
     
     distribution = roleDistributionSH(playerCount, playerID, lobbyID)
+    print(distribution)
+    
     if len(distribution) != playerCount:
         print("Error 4")
         return render(request, 'invalidGameState.html')
@@ -173,12 +178,14 @@ def gameWW(request):
     
     distribution = roleDistributionWW(playerID, lobbyID)
     print(distribution)
+    
     if len(distribution) != playerCount:
         print("Error 4")
         return render(request, 'invalidGameState.html')
 
+    output = setOutputWW(playerID, playerName, distribution, playerCount, lobbyID=lobbyID)
     
-    return render(request, 'gameWW.html')
+    return render(request, 'gameWW.html', output)
         
 # alter DB with ONE of the possible parameters
 def alterDB(idLobby:int=0, observation:dict=None, removeFromLobby:str=None, addToLobby:list=None, distribution:dict=None, roles:dict=None,stat:str=None, reset:bool=False):
@@ -311,7 +318,7 @@ def roleDistributionSH(playerCount:int, playerID:str, idLobby:int = 0)-> dict:
 
     if (playerCount < 5):
         print("Error 1")
-        return False
+        return {}
 
     elif (playerCount < 7):
 
@@ -330,7 +337,7 @@ def roleDistributionSH(playerCount:int, playerID:str, idLobby:int = 0)-> dict:
     
     else:
         print("Error 2")
-        return False
+        return {}
 
     try:
     
@@ -403,6 +410,7 @@ def setOutputSH(playerID:str, playerName:str, distribution:dict, playerCount:int
     for player in distribution:
         if player[1] != playerName:
             output["lobby"].append(player[1])
+    output["lobby"].sort()
 
     lobby = Lobby.objects.filter(lobbyID=lobbyID)[0]
     output["observations"] = ast.literal_eval(lobby.observations)
@@ -489,5 +497,5 @@ def roleDistributionWW(playerID:str, idLobby:int = 0)-> dict:
 
     return distribution
 
-def outputWW()-> dict:
+def setOutputWW(playerID:str, playerName:str, distribution:dict, playerCount:int, lobbyID:int)-> dict: 
     pass
