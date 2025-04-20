@@ -497,5 +497,19 @@ def roleDistributionWW(playerID:str, idLobby:int = 0)-> dict:
 
     return distribution
 
-def setOutputWW(playerID:str, playerName:str, distribution:dict, playerCount:int, lobbyID:int)-> dict: 
-    pass
+def setOutputWW(playerID:str, playerName:str, distribution:dict, lobbyID:int)-> dict: 
+    
+    role = distribution[(playerID, playerName)]
+    output = {"role": role, "allies": ""}
+
+    output["lobby"] = []
+    # only add other players
+    for player in distribution:
+        if player[1] != playerName:
+            output["lobby"].append(player[1])
+    output["lobby"].sort()
+
+    lobby = Lobby.objects.filter(lobbyID=lobbyID)[0]
+    output["observations"] = ast.literal_eval(lobby.observations)
+
+    return output

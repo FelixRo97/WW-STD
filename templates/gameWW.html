@@ -16,7 +16,18 @@
     <body>        
         <h1 class="lobbyTop">Deine Rolle: {{role}}</h1>
 
-       
+        <form class="center"  method="POST">
+            {% csrf_token %}
+            <button id="showRole" type="button" onclick="viewRole();">Rolle ansehen</button> 
+        </form>
+
+        <div class="center">
+            <select  id="otherPlayers">
+            {% for player in lobby %}
+                <option value="{{player}}">{{player}}</option>
+            {% endfor %}        
+            </select>
+        </div>
         
         <!-- Error message -->
         <div class="playerNames" id="eM"></div>
